@@ -1,0 +1,54 @@
+---
+title: "Analyse en Composantes Principales - World Happiness 2015"
+author: "Anthony Combes--Aguéra"
+format: html
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+library(FactoMineR)
+library(factoextra)
+```
+
+1. Chargement, nettoyage, sélection des variables
+
+Le fichier nettoyé dans le notebook python `nettoyage_des_données.ipynb`,`world_happiness_2015_clean.csv`, est utilisé dans le cadre de cette ACP.
+
+Certaines colonnes ne doivent pas être utilisées dans l’ACP car ce sont des identifiants ou des informations qualitatives :
+
+  - Ranking
+  - Country
+  - Regional.indicator
+  - Happiness.score
+  - Year
+
+Voici les variables quantitatives restantes :
+
+  - GDP per capita
+  - Social support
+  - Healthy life expectancy
+  - Freedom to make life choices
+  - Generosity
+  - Perceptions of corruption
+
+```{r etape1}
+data <- "C:/Users/antoc/world-happiness/data/clean/world_happiness_2015_clean.csv"
+df <- read.csv(data, header = TRUE, sep = ";", dec = ",", stringsAsFactors = FALSE)
+
+no_var <- c("Ranking", "Country", "Regional.indicator", "Happiness.score", "Year")
+pays <- df$Country
+
+X <- df[, !(names(df) %in% no_var)]
+X <- as.data.frame(lapply(X, function(x) as.numeric(as.character(x))))
+rownames(X) <- pays
+X <- X[complete.cases(X), ]
+
+n <- nrow(X)
+p <- ncol(X)
+
+summary(X)
+```
