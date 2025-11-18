@@ -16,7 +16,16 @@ library(factoextra)
 
 1. ##### Chargement des données et sélection des variables
 
-Le fichier nettoyé dans le notebook `nettoyage_des_données.ipynb`, `world_happiness_2015_clean.csv`, est utilisé dans le cadre de cette ACP.
+Le fichier nettoyé dans le notebook `nettoyage_des_données.ipynb`, `world_happiness_2015_clean.csv`, est utilisé dans le cadre de cette première ACP.
+
+```{r chargement_des_données}
+data <- "../data/clean/world_happiness_2015_clean.csv"
+df <- read.csv(data, header = TRUE, sep = ";", dec = ",", stringsAsFactors = FALSE)
+names(df)
+
+no_var <- c("rank", "country", "region", "happiness_score", "year")
+pays <- df$country
+```
 
 Certaines colonnes ne doivent pas être utilisées dans l’ACP car ce sont des identifiants ou des informations qualitatives :
 
@@ -35,14 +44,7 @@ Voici les variables quantitatives restantes :
   - `generosity`
   - `corruption_perception`
 
-```{r chargement_des_données}
-data <- "C:/Users/antoc/world-happiness/data/clean/world_happiness_2015_clean.csv"
-df <- read.csv(data, header = TRUE, sep = ";", dec = ",", stringsAsFactors = FALSE)
-names(df)
-
-no_var <- c("rank", "country", "region", "happiness_score", "year")
-pays <- df$country
-
+```{r chargement_des_données_suite}
 X <- df[, !(names(df) %in% no_var)]
 X <- as.data.frame(lapply(X, function(x) as.numeric(as.character(x))))
 rownames(X) <- pays
@@ -52,6 +54,8 @@ p <- ncol(X)
 
 summary(X)
 ```
+
+Ces variables sont sur des échelles différentes, la standardisation est indispensable avant de réaliser l’ACP.
 
 2. ##### Standardisation des données et matrice de corrélation
 
@@ -116,7 +120,15 @@ data.frame(
 
 ```
 
-On voit que les deux premières composantes expliquent environ 72 % de l’inertie totale, ce qui permet de se concentrer principalement sur le plan (1,2).
+Les valeurs propres nous montrent que :
+
+- la première composante (`Dim 1`) explique environ `49,7 %` de l’inertie totale,
+- la deuxième composante (`Dim 2`) environ `22,0 %`,
+- `au total`, les deux premières composantes cumulent donc environ `71,7 %` de l’information totale.
+
+Les composantes suivantes (`Dim 3 à Dim 6`) apportent chacune moins de `11 %` d’inertie.  
+Il est donc possible de concentrer l’analyse graphique sur le plan factoriel (`Dim 1`, `Dim 2`), qui résume déjà l’essentiel de la variabilité entre les pays.
+
 
 ```{r eboulis des valeurs propres}
 barplot(
@@ -131,13 +143,13 @@ Le graphique nous conforte dans le choix de nous concentrer sur le plan (1,2), p
 
 4. ##### Coordonnées factorielles des individus
 
-```{r coordonnees_individus}
+```{r coordonnees_individus, fig.width=8, fig.height=6}
 # Scores factoriels : F = Z V
 F <- Z %*% V
 colnames(F) <- paste0("Dim", 1:p)
 rownames(F) <- rownames(X)
 
-# Vérification : variances des axes = lambda
+# Vérification des variances des axes = lambda
 apply(F, 2, var) * (n - 1) / n
 lambda[1:6]
 
@@ -152,3 +164,145 @@ plot(F[,1], F[,2],
 abline(h = 0, v = 0, lty = 3)
 text(F[,1], F[,2], labels = rownames(F), pos = 3, cex = 0.6)
 ```
+
+5. ##### Qualité de représentation des pays sur le plan (1,2)
+```{r cos2_individus, fig.width=8, fig.height=6}
+# Norme au carré de chaque individu dans l'espace factoriel
+normes_F2 <- rowSums(F^2)
+
+# cos2 sur le plan (1,2)
+cos2_12 <- (F[,1]^2 + F[,2]^2) / normes_F2
+
+# pays les mieux représentés sur le plan (1,2)
+cos2_12_ord <- sort(cos2_12, decreasing = TRUE)
+head(cos2_12_ord, 10)
+
+indiv <- data.frame(
+  country = rownames(F),
+  Dim1    = F[, 1],
+  Dim2    = F[, 2],
+  cos2_12 = cos2_12,
+  region  = df$region
+)
+cos2_vec <- setNames(indiv$cos2_12, indiv$country)
+cos2_ordonnes <- sort(cos2_vec, decreasing = TRUE)
+barplot(cos2_ordonnes[1:20],
+        las = 2,
+        cex.names = 0.6,
+        main = "20 pays les mieux projetés sur le plan (1,2)",
+        ylab = "cos2 (Dim1, Dim2)")
+```
+
+Les pays les mieux représentés sur le plan (1,2) sont par exemple `Germany`, `Australia`, `Malawi`, `Canada`, `Guinea`, `Ireland`, `Belgium`, `Norway`, `Netherlands` ou encore `Austria`, avec des cos2 supérieurs à 0.95. Pour ces pays, plus de 95 % de leur inertie est expliquée par les deux premières composantes, leur position dans le plan factoriel est donc très fiable.
+
+```{r cos2_individus_suite, fig.width=8, fig.height=6}
+cos2_12_ord <- sort(cos2_12, decreasing = FALSE)
+head(cos2_12_ord, 10)
+
+cos2_pires <- sort(cos2_vec, decreasing = FALSE)
+
+barplot(cos2_pires[1:20],
+        las = 2,
+        cex.names = 0.6,
+        main = "20 pays les moins bien projetés sur le plan (1,2)",
+        ylab = "cos2 (Dim1, Dim2)")
+
+```
+
+À l’inverse, certains pays sont très mal projetés sur ce plan. On trouve notamment `Mongolia`, `Vietnam`, `Georgia`, `Jamaica`, `Botswana`, `Iran`, `Kyrgyzstan`, `Colombia`, `Cyprus` ou encore `Ecuador`, avec des cos2 parfois inférieurs à 0.05. Cela signifie qu’une grande partie de l’information les concernant est portée par les dimensions suivantes (Dim 3, Dim 4, etc.). 
+
+L’interprétation de leur position dans le plan (1,2) doit donc être faite avec prudence, car ce plan ne résume pas bien leur profil sur les variables de bien-être.
+
+```{r coordonnees_individus_couleur, fig.width=8, fig.height=6}
+# Facteur de région + palette de couleurs
+region_fac      <- factor(indiv$region)
+palette_region  <- rainbow(length(levels(region_fac)))
+col_region      <- palette_region[region_fac]
+
+pc1 <- perc[1]
+pc2 <- perc[2]
+
+plot(indiv$Dim1, indiv$Dim2,
+     xlab = sprintf("Dim 1 (%.1f%%)", pc1),
+     ylab = sprintf("Dim 2 (%.1f%%)", pc2),
+     main = "Pays – plan factoriel (1,2) coloré par région",
+     pch  = 16,
+     cex  = 0.7,
+     col  = col_region)
+abline(h = 0, v = 0, lty = 3)
+
+# Labels seulement pour les pays bien représentés (cos2 >= 0.7)
+bien_repr <- indiv$cos2_12 >= 0.7
+
+text(indiv$Dim1[bien_repr],
+     indiv$Dim2[bien_repr],
+     labels = indiv$country[bien_repr],
+     pos = 3, cex = 0.6)
+
+# Légende des régions
+legend("topleft",
+       legend = levels(region_fac),
+       col    = palette_region,
+       pch    = 16,
+       bty    = "n",
+       cex    = 0.6,
+       ncol   = 2,      
+       xpd    = TRUE)  
+
+```
+Les pays sont colorés par grande région géographique donné par le jeu de donnée.
+Seuls les pays bien représentés par le plan (cos2 >= 0,7) sont étiquetés.
+
+6. ##### Coordonnées factorielles des variables
+
+```{r coordonnees_variables}
+# Coordonnées des variables sur les axes
+var_coord <- V %*% diag(sqrt(lambda))
+rownames(var_coord) <- colnames(X)
+colnames(var_coord) <- paste0("Dim", 1:p)
+
+round(var_coord, 3)
+
+# cos2 des variables sur les deux premiers axes
+var_cos2 <- var_coord^2
+round(var_cos2[, 1:2], 3)
+
+# Contributions des variables aux axes 1 et 2
+# contrib(j,k) = coord(j,k)^2 / lambda_k
+var_contrib <- sweep(var_coord^2, 2, lambda, FUN = "/") * 100
+round(var_contrib[, 1:2], 2)
+```
+
+Sur le plan des variables, la première composante (Dim 1) oppose les variables :
+
+- `gdp_per_capita` (−0.84, cos2 : 0.70),
+- `healthy_life_expectancy` (−0.80, cos2 : 0.64),
+- `social_support` (−0.78, cos2 : 0.60),
+- `freedom_to_choose` (−0.70, cos2 : 0.49),
+
+à la variable : 
+- `corruption_perception` (0.65, cos2 : 0.42).
+
+Ces variables contribuent chacune de `14 % à 24 %` à `Dim 1`, ce qui montre que cet axe traduit un `niveau global de bien-être et de développement` : PIB par habitant élevé, bonne santé, fort soutien social, liberté perçue et faible corruption vont tous dans la même direction. 
+
+La deuxième composante (`Dim 2`) est dominée par :
+
+- `generosity`, avec un cos2 de 0.56 et une contribution d’environ `42 %` à l’axe 2,
+- `freedom_to_choose`, `gdp_per_capita`, `healthy_life_expectancy` et `corruption_perception`, qui contribuent chacun entre `10 % et 18 %`.
+
+`Dim 2` oppose donc principalement les pays `très généreux` (donations, solidarité) à ceux qui le sont moins, tout en tenant compte également de différences en termes de liberté perçue, de richesse et de santé. On peut interpréter cet axe comme une dimension complémentaire, liée à la `générosité et à certains aspects culturels et sociaux` qui ne sont pas entièrement expliqués par le niveau de développement.
+
+7. ##### Cercle des corrélations (plan 1,2)
+
+```{r cercle_correlations}
+res_pca <- PCA(X, scale.unit = TRUE, ncp = p, graph = FALSE)
+plot(res_pca, choix = "var", main = "Cercle des corrélations")
+```
+
+Le cercle des corrélations confirme ces interprétations :
+
+- les variables `gdp_per_capita`, `social_support`, `healthy_life_expectancy` et `freedom_to_choose` sont regroupées du même côté de Dim 1, ce qui traduit leur corrélation positive entre elles ;
+- `corruption_perception` est située à l'opposé de la direction générale, ce qui signifie que, dans ce jeu de données, les pays les plus riches et en meilleure santé sont aussi ceux où la corruption est perçue comme plus faible ;
+- `generosity` est davantage alignée sur Dim 2, ce qui confirme que cette dimension capte surtout des différences de générosité entre les pays.
+
+La plupart des variables sont proches du cercle unité, ce qui signifie qu’elles sont `bien représentées` par les deux premiers axes et que `le plan (1,2)` restitue correctement la structure des corrélations entre les indicateurs de bien-être.
