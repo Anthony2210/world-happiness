@@ -107,57 +107,256 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <ol type="1">
-<li>Chargement, nettoyage, sélection des variables</li>
+<li><h5 id="chargement-des-données-et-sélection-des-variables" class="anchored">Chargement des données et sélection des variables</h5></li>
 </ol>
-<p>Le fichier nettoyé dans le notebook python <code>nettoyage_des_données.ipynb</code>,<code>world_happiness_2015_clean.csv</code>, est utilisé dans le cadre de cette ACP.</p>
+<p>Le fichier nettoyé dans le notebook <code>nettoyage_des_données.ipynb</code>, <code>world_happiness_2015_clean.csv</code>, est utilisé dans le cadre de cette ACP.</p>
 <p>Certaines colonnes ne doivent pas être utilisées dans l’ACP car ce sont des identifiants ou des informations qualitatives :</p>
 <ul>
-<li>Ranking</li>
-<li>Country</li>
-<li>Regional.indicator</li>
-<li>Happiness.score</li>
-<li>Year</li>
+<li><code>rank</code></li>
+<li><code>country</code></li>
+<li><code>region</code></li>
+<li><code>happiness_score</code></li>
+<li><code>year</code></li>
 </ul>
 <p>Voici les variables quantitatives restantes :</p>
 <ul>
-<li>GDP per capita</li>
-<li>Social support</li>
-<li>Healthy life expectancy</li>
-<li>Freedom to make life choices</li>
-<li>Generosity</li>
-<li>Perceptions of corruption</li>
+<li><code>gpd_per_capita</code></li>
+<li><code>social_support</code></li>
+<li><code>healthy_life_expectancy</code></li>
+<li><code>freedom_to_choose</code></li>
+<li><code>generosity</code></li>
+<li><code>corruption_perception</code></li>
 </ul>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="st">"C:/Users/antoc/world-happiness/data/clean/world_happiness_2015_clean.csv"</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(data, <span class="at">header =</span> <span class="cn">TRUE</span>, <span class="at">sep =</span> <span class="st">";"</span>, <span class="at">dec =</span> <span class="st">","</span>, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>no_var <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Ranking"</span>, <span class="st">"Country"</span>, <span class="st">"Regional.indicator"</span>, <span class="st">"Happiness.score"</span>, <span class="st">"Year"</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>pays <span class="ot">&lt;-</span> df<span class="sc">$</span>Country</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> df[, <span class="sc">!</span>(<span class="fu">names</span>(df) <span class="sc">%in%</span> no_var)]</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">lapply</span>(X, <span class="cf">function</span>(x) <span class="fu">as.numeric</span>(<span class="fu">as.character</span>(x))))</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(X) <span class="ot">&lt;-</span> pays</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> X[<span class="fu">complete.cases</span>(X), ]</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(X)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> GDP.per.capita    Social.support   Healthy.life.expectancy
- Min.   :0.09487   Min.   :0.0998   Min.   :39.00          
- 1st Qu.:3.63102   1st Qu.:0.6324   1st Qu.:59.50          
- Median :5.55657   Median :0.7442   Median :65.00          
- Mean   :5.21988   Mean   :0.7220   Mean   :62.87          
- 3rd Qu.:6.94472   3rd Qu.:0.8822   3rd Qu.:70.00          
- Max.   :9.25162   Max.   :1.0000   Max.   :76.00          
- Freedom.to.make.life.choices   Generosity     Perceptions.of.corruption
- Min.   :0.0000               Min.   :0.0000   Min.   :0.1084           
- 1st Qu.:0.4958               1st Qu.:0.1812   1st Qu.:0.6986           
- Median :0.6514               Median :0.2746   Median :0.8337           
- Mean   :0.6511               Mean   :0.2996   Mean   :0.7612           
- 3rd Qu.:0.8248               3rd Qu.:0.3983   3rd Qu.:0.8955           
- Max.   :1.0000               Max.   :1.0000   Max.   :1.0000           </code></pre>
+<pre><code> [1] "rank"                    "country"                
+ [3] "region"                  "happiness_score"        
+ [5] "gdp_per_capita"          "social_support"         
+ [7] "healthy_life_expectancy" "freedom_to_choose"      
+ [9] "generosity"              "corruption_perception"  
+[11] "year"                   </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>no_var <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rank"</span>, <span class="st">"country"</span>, <span class="st">"region"</span>, <span class="st">"happiness_score"</span>, <span class="st">"year"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pays <span class="ot">&lt;-</span> df<span class="sc">$</span>country</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> df[, <span class="sc">!</span>(<span class="fu">names</span>(df) <span class="sc">%in%</span> no_var)]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">lapply</span>(X, <span class="cf">function</span>(x) <span class="fu">as.numeric</span>(<span class="fu">as.character</span>(x))))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(X) <span class="ot">&lt;-</span> pays</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(X)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> gdp_per_capita    social_support   healthy_life_expectancy freedom_to_choose
+ Min.   :0.09487   Min.   :0.0998   Min.   :39.00           Min.   :0.0000   
+ 1st Qu.:3.63102   1st Qu.:0.6324   1st Qu.:59.50           1st Qu.:0.4958   
+ Median :5.55657   Median :0.7442   Median :65.00           Median :0.6514   
+ Mean   :5.21988   Mean   :0.7220   Mean   :62.87           Mean   :0.6511   
+ 3rd Qu.:6.94472   3rd Qu.:0.8822   3rd Qu.:70.00           3rd Qu.:0.8248   
+ Max.   :9.25162   Max.   :1.0000   Max.   :76.00           Max.   :1.0000   
+   generosity     corruption_perception
+ Min.   :0.0000   Min.   :0.1084       
+ 1st Qu.:0.1812   1st Qu.:0.6986       
+ Median :0.2746   Median :0.8337       
+ Mean   :0.2996   Mean   :0.7612       
+ 3rd Qu.:0.3983   3rd Qu.:0.8955       
+ Max.   :1.0000   Max.   :1.0000       </code></pre>
+</div>
+</div>
+<ol start="2" type="1">
+<li><h5 id="standardisation-des-données-et-matrice-de-corrélation" class="anchored">Standardisation des données et matrice de corrélation</h5></li>
+</ol>
+<p>Afin de faire une ACP normée, on a besoin d’une matrice de données Z</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>X_mat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(X)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>moy <span class="ot">&lt;-</span> <span class="fu">apply</span>(X_mat, <span class="dv">2</span>, mean)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>moy</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         gdp_per_capita          social_support healthy_life_expectancy 
+              5.2198778               0.7219896              62.8661417 
+      freedom_to_choose              generosity   corruption_perception 
+              0.6511372               0.2995669               0.7612169 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>ecartype <span class="ot">&lt;-</span> <span class="fu">apply</span>(X_mat, <span class="dv">2</span>, sd) <span class="sc">*</span> <span class="fu">sqrt</span>((n <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> n)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ecartype</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         gdp_per_capita          social_support healthy_life_expectancy 
+              2.2320642               0.1908510               8.3810455 
+      freedom_to_choose              generosity   corruption_perception 
+              0.2198149               0.1611554               0.2084029 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Standardisation : Z = (X - moy) / ecartype</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>Z <span class="ot">&lt;-</span> <span class="fu">scale</span>(X_mat, <span class="at">center =</span> moy, <span class="at">scale =</span> ecartype)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification moyenne et variance</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(Z, <span class="dv">2</span>, mean)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         gdp_per_capita          social_support healthy_life_expectancy 
+          -3.281120e-17           -5.182657e-17           -2.509322e-16 
+      freedom_to_choose              generosity   corruption_perception 
+          -1.964019e-16            1.607885e-16           -1.531790e-16 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(Z, <span class="dv">2</span>, var) <span class="sc">*</span> (n <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> n</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         gdp_per_capita          social_support healthy_life_expectancy 
+                      1                       1                       1 
+      freedom_to_choose              generosity   corruption_perception 
+                      1                       1                       1 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Matrice des poids (1/n)</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="fu">rep</span>(<span class="dv">1</span> <span class="sc">/</span> n, n))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Matrice de corrélation R = Z' N Z</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>R <span class="ot">&lt;-</span> <span class="fu">t</span>(Z) <span class="sc">%*%</span> N <span class="sc">%*%</span> Z</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(R, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                        gdp_per_capita social_support healthy_life_expectancy
+gdp_per_capita                   1.000          0.651                   0.831
+social_support                   0.651          1.000                   0.541
+healthy_life_expectancy          0.831          0.541                   1.000
+freedom_to_choose                0.318          0.484                   0.317
+generosity                       0.020          0.131                   0.106
+corruption_perception           -0.405         -0.273                  -0.325
+                        freedom_to_choose generosity corruption_perception
+gdp_per_capita                      0.318      0.020                -0.405
+social_support                      0.484      0.131                -0.273
+healthy_life_expectancy             0.317      0.106                -0.325
+freedom_to_choose                   1.000      0.425                -0.536
+generosity                          0.425      1.000                -0.298
+corruption_perception              -0.536     -0.298                 1.000</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Comparaison avec cor(X) pour vérifier</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">cor</span>(X), <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                        gdp_per_capita social_support healthy_life_expectancy
+gdp_per_capita                   1.000          0.651                   0.831
+social_support                   0.651          1.000                   0.541
+healthy_life_expectancy          0.831          0.541                   1.000
+freedom_to_choose                0.318          0.484                   0.317
+generosity                       0.020          0.131                   0.106
+corruption_perception           -0.405         -0.273                  -0.325
+                        freedom_to_choose generosity corruption_perception
+gdp_per_capita                      0.318      0.020                -0.405
+social_support                      0.484      0.131                -0.273
+healthy_life_expectancy             0.317      0.106                -0.325
+freedom_to_choose                   1.000      0.425                -0.536
+generosity                          0.425      1.000                -0.298
+corruption_perception              -0.536     -0.298                 1.000</code></pre>
+</div>
+</div>
+<ol start="3" type="1">
+<li><h5 id="décomposition-spectrale-valeurs-propres-vecteurs-propres" class="anchored">Décomposition spectrale (valeurs propres, vecteurs propres)</h5></li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">eigen</span>(R)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Valeurs propres</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>lambda <span class="ot">&lt;-</span> e<span class="sc">$</span>values</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>lambda</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2.9849587 1.3188469 0.6593981 0.5803002 0.3238288 0.1326673</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification : somme des lambda = p </span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(lambda)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 6</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>p</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 6</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Vecteurs propres</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> e<span class="sc">$</span>vectors</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification orthonormalité : t(V) %*% V = I</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">t</span>(V) <span class="sc">%*%</span> V, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    0    0    0    0    0
+[2,]    0    1    0    0    0    0
+[3,]    0    0    1    0    0    0
+[4,]    0    0    0    1    0    0
+[5,]    0    0    0    0    1    0
+[6,]    0    0    0    0    0    1</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pourcentages d'inertie</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>perc <span class="ot">&lt;-</span> <span class="dv">100</span> <span class="sc">*</span> lambda <span class="sc">/</span> <span class="fu">sum</span>(lambda)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>perc_cum <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(perc)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">axe =</span> <span class="dv">1</span><span class="sc">:</span>p,</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda =</span> lambda,</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">pourcentage =</span> perc,</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">cumul =</span> perc_cum</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  axe    lambda pourcentage     cumul
+1   1 2.9849587   49.749311  49.74931
+2   2 1.3188469   21.980782  71.73009
+3   3 0.6593981   10.989969  82.72006
+4   4 0.5803002    9.671670  92.39173
+5   5 0.3238288    5.397147  97.78888
+6   6 0.1326673    2.211121 100.00000</code></pre>
+</div>
+</div>
+<p>On voit que les deux premières composantes expliquent environ 72 % de l’inertie totale, ce qui permet de se concentrer principalement sur le plan (1,2).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  lambda,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">main =</span> <span class="st">"Éboulis des valeurs propres"</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">"Composantes"</span>,</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">"Valeur propre"</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ACP_files/figure-html/eboulis%20des%20valeurs%20propres-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Le graphique nous conforte dans le choix de nous concentrer sur le plan (1,2), puisque graphiquement on peut utiliser la règle du coude.</p>
+<ol start="4" type="1">
+<li><h5 id="coordonnées-factorielles-des-individus" class="anchored">Coordonnées factorielles des individus</h5></li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scores factoriels : F = Z V</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>F <span class="ot">&lt;-</span> Z <span class="sc">%*%</span> V</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(F) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"Dim"</span>, <span class="dv">1</span><span class="sc">:</span>p)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(F) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(X)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification : variances des axes = lambda</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(F, <span class="dv">2</span>, var) <span class="sc">*</span> (n <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> n</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     Dim1      Dim2      Dim3      Dim4      Dim5      Dim6 
+2.9849587 1.3188469 0.6593981 0.5803002 0.3238288 0.1326673 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>lambda[<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2.9849587 1.3188469 0.6593981 0.5803002 0.3238288 0.1326673</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>pc1 <span class="ot">&lt;-</span> perc[<span class="dv">1</span>]</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>pc2 <span class="ot">&lt;-</span> perc[<span class="dv">2</span>]</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(F[,<span class="dv">1</span>], F[,<span class="dv">2</span>],</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="fu">sprintf</span>(<span class="st">"Dim 1 (%.1f%%)"</span>, pc1),</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="fu">sprintf</span>(<span class="st">"Dim 2 (%.1f%%)"</span>, pc2),</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Pays – plan factoriel (1,2)"</span>,</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">cex =</span> <span class="fl">0.6</span>)</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">v =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">3</span>)</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(F[,<span class="dv">1</span>], F[,<span class="dv">2</span>], <span class="at">labels =</span> <span class="fu">rownames</span>(F), <span class="at">pos =</span> <span class="dv">3</span>, <span class="at">cex =</span> <span class="fl">0.6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ACP_files/figure-html/coordonnees_individus-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 

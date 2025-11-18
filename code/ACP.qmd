@@ -14,41 +14,141 @@ library(FactoMineR)
 library(factoextra)
 ```
 
-1. Chargement, nettoyage, sélection des variables
+1. ##### Chargement des données et sélection des variables
 
-Le fichier nettoyé dans le notebook python `nettoyage_des_données.ipynb`,`world_happiness_2015_clean.csv`, est utilisé dans le cadre de cette ACP.
+Le fichier nettoyé dans le notebook `nettoyage_des_données.ipynb`, `world_happiness_2015_clean.csv`, est utilisé dans le cadre de cette ACP.
 
 Certaines colonnes ne doivent pas être utilisées dans l’ACP car ce sont des identifiants ou des informations qualitatives :
 
-  - Ranking
-  - Country
-  - Regional.indicator
-  - Happiness.score
-  - Year
+  - `rank`
+  - `country`
+  - `region`
+  - `happiness_score`
+  - `year`
 
 Voici les variables quantitatives restantes :
 
-  - GDP per capita
-  - Social support
-  - Healthy life expectancy
-  - Freedom to make life choices
-  - Generosity
-  - Perceptions of corruption
+  - `gpd_per_capita`
+  - `social_support`
+  - `healthy_life_expectancy`
+  - `freedom_to_choose`
+  - `generosity`
+  - `corruption_perception`
 
-```{r etape1}
+```{r chargement_des_données}
 data <- "C:/Users/antoc/world-happiness/data/clean/world_happiness_2015_clean.csv"
 df <- read.csv(data, header = TRUE, sep = ";", dec = ",", stringsAsFactors = FALSE)
+names(df)
 
-no_var <- c("Ranking", "Country", "Regional.indicator", "Happiness.score", "Year")
-pays <- df$Country
+no_var <- c("rank", "country", "region", "happiness_score", "year")
+pays <- df$country
 
 X <- df[, !(names(df) %in% no_var)]
 X <- as.data.frame(lapply(X, function(x) as.numeric(as.character(x))))
 rownames(X) <- pays
-X <- X[complete.cases(X), ]
 
 n <- nrow(X)
 p <- ncol(X)
 
 summary(X)
+```
+
+2. ##### Standardisation des données et matrice de corrélation
+
+Afin de faire une ACP normée, on a besoin d'une matrice de données Z
+```{r standardisation}
+X_mat <- as.matrix(X)
+ 
+moy <- apply(X_mat, 2, mean)
+moy
+
+ecartype <- apply(X_mat, 2, sd) * sqrt((n - 1) / n)
+ecartype
+
+# Standardisation : Z = (X - moy) / ecartype
+Z <- scale(X_mat, center = moy, scale = ecartype)
+
+# Vérification moyenne et variance
+apply(Z, 2, mean)
+apply(Z, 2, var) * (n - 1) / n
+
+# Matrice des poids (1/n)
+N <- diag(rep(1 / n, n))
+
+# Matrice de corrélation R = Z' N Z
+R <- t(Z) %*% N %*% Z
+
+round(R, 3)
+
+# Comparaison avec cor(X) pour vérifier
+round(cor(X), 3)
+```
+
+3. ##### Décomposition spectrale (valeurs propres, vecteurs propres)
+
+```{r decomposition_spectrale}
+e <- eigen(R)
+
+# Valeurs propres
+lambda <- e$values
+lambda
+
+# Vérification : somme des lambda = p 
+sum(lambda)
+p
+
+# Vecteurs propres
+V <- e$vectors
+
+# Vérification orthonormalité : t(V) %*% V = I
+round(t(V) %*% V, 3)
+
+# Pourcentages d'inertie
+perc <- 100 * lambda / sum(lambda)
+perc_cum <- cumsum(perc)
+
+data.frame(
+  axe = 1:p,
+  lambda = lambda,
+  pourcentage = perc,
+  cumul = perc_cum
+)
+
+```
+
+On voit que les deux premières composantes expliquent environ 72 % de l’inertie totale, ce qui permet de se concentrer principalement sur le plan (1,2).
+
+```{r eboulis des valeurs propres}
+barplot(
+  lambda,
+  main = "Éboulis des valeurs propres",
+  xlab = "Composantes",
+  ylab = "Valeur propre"
+)
+```
+
+Le graphique nous conforte dans le choix de nous concentrer sur le plan (1,2), puisque graphiquement on peut utiliser la règle du coude.
+
+4. ##### Coordonnées factorielles des individus
+
+```{r coordonnees_individus}
+# Scores factoriels : F = Z V
+F <- Z %*% V
+colnames(F) <- paste0("Dim", 1:p)
+rownames(F) <- rownames(X)
+
+# Vérification : variances des axes = lambda
+apply(F, 2, var) * (n - 1) / n
+lambda[1:6]
+
+pc1 <- perc[1]
+pc2 <- perc[2]
+
+plot(F[,1], F[,2],
+     xlab = sprintf("Dim 1 (%.1f%%)", pc1),
+     ylab = sprintf("Dim 2 (%.1f%%)", pc2),
+     main = "Pays – plan factoriel (1,2)",
+     pch = 16, cex = 0.6)
+abline(h = 0, v = 0, lty = 3)
+text(F[,1], F[,2], labels = rownames(F), pos = 3, cex = 0.6)
 ```
