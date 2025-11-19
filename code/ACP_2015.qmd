@@ -1,6 +1,6 @@
 ---
-title: "Analyse en Composantes Principales - World Happiness 2015"
-author: "Anthony Combes--Aguéra"
+title: "**WORLD HAPPINESS**" 
+subtitle: "**Analyse en Composantes Principales sur l'année 2015**"
 format: html
 ---
 
@@ -37,7 +37,7 @@ Certaines colonnes ne doivent pas être utilisées dans l’ACP car ce sont des 
 
 Voici les variables quantitatives restantes :
 
-  - `gpd_per_capita`
+  - `gdp_per_capita`
   - `social_support`
   - `healthy_life_expectancy`
   - `freedom_to_choose`
@@ -193,7 +193,9 @@ barplot(cos2_ordonnes[1:20],
         ylab = "cos2 (Dim1, Dim2)")
 ```
 
-Les pays les mieux représentés sur le plan (1,2) sont par exemple `Germany`, `Australia`, `Malawi`, `Canada`, `Guinea`, `Ireland`, `Belgium`, `Norway`, `Netherlands` ou encore `Austria`, avec des cos2 supérieurs à 0.95. Pour ces pays, plus de 95 % de leur inertie est expliquée par les deux premières composantes, leur position dans le plan factoriel est donc très fiable.
+Les pays les mieux représentés sur le plan (1,2) sont par exemple `Germany`, `Australia`, `Malawi`, `Canada`, `Guinea`, `Ireland`, `Belgium`, `Norway`, `Netherlands` ou encore `Austria`, avec des cos2 supérieurs à `0.95`. 
+
+Pour ces pays, plus de 95 % de leur inertie est expliquée par les deux premières composantes, `leur position dans le plan factoriel est donc très fiable`.
 
 ```{r cos2_individus_suite, fig.width=8, fig.height=6}
 cos2_12_ord <- sort(cos2_12, decreasing = FALSE)
@@ -209,9 +211,9 @@ barplot(cos2_pires[1:20],
 
 ```
 
-À l’inverse, certains pays sont très mal projetés sur ce plan. On trouve notamment `Mongolia`, `Vietnam`, `Georgia`, `Jamaica`, `Botswana`, `Iran`, `Kyrgyzstan`, `Colombia`, `Cyprus` ou encore `Ecuador`, avec des cos2 parfois inférieurs à 0.05. Cela signifie qu’une grande partie de l’information les concernant est portée par les dimensions suivantes (Dim 3, Dim 4, etc.). 
+À l’inverse, certains pays sont très mal projetés sur ce plan. On trouve notamment `Mongolia`, `Vietnam`, `Georgia`, `Jamaica`, `Botswana`, `Iran`, `Kyrgyzstan`, `Colombia`, `Cyprus` ou encore `Ecuador`, avec des cos2 parfois `inférieurs à 0.05`. 
 
-L’interprétation de leur position dans le plan (1,2) doit donc être faite avec prudence, car ce plan ne résume pas bien leur profil sur les variables de bien-être.
+Cela signifie qu’une grande partie de l’information les concernant est portée par les dimensions suivantes (Dim 3, Dim 4, etc.) L’interprétation de leur position dans le plan (1,2) doit donc être faite avec prudence, car ce plan ne résume pas bien leur profil sur les variables de bien-être.
 
 ```{r coordonnees_individus_couleur, fig.width=8, fig.height=6}
 # Facteur de région + palette de couleurs
@@ -273,24 +275,33 @@ var_contrib <- sweep(var_coord^2, 2, lambda, FUN = "/") * 100
 round(var_contrib[, 1:2], 2)
 ```
 
-Sur le plan des variables, la première composante (Dim 1) oppose les variables :
+Sur le plan des variables, la première composante (`Dim 1`) est fortement liée aux indicateurs suivants :
 
-- `gdp_per_capita` (−0.84, cos2 : 0.70),
-- `healthy_life_expectancy` (−0.80, cos2 : 0.64),
-- `social_support` (−0.78, cos2 : 0.60),
-- `freedom_to_choose` (−0.70, cos2 : 0.49),
+| Variable             | Coordonnée Dim 1 | cos2 Dim 1 | Contribution Dim 1 |
+|:-----------------------|:----------------:|:----------:|:------------------:|
+| `gdp_per_capita `   |       -0,84      |    0,70    |        23,5 %      |
+| `healthy_life_expectancy` |       -0,80      |    0,64    |        21,4 %      |
+| `social_support `   |       -0,78      |    0,60    |        20,2 %      |
+| `freedom_to_choose `    |       -0,70      |    0,49    |        16,5 %      |
+| `corruption_perception `  |        0,65      |    0,42    |        14,2 %      |
+| generosity              |       -0,35      |    0,12    |         4,1 %      |
 
-à la variable : 
-- `corruption_perception` (0.65, cos2 : 0.42).
+Dim 1 oppose les pays avec `PIB élevé, bonne espérance de vie en bonne santé, fort soutien social et grande liberté perçue` et les pays où les scores de `corruption_perception` sont élevés, donc où la corruption est jugée plus présente.  
 
-Ces variables contribuent chacune de `14 % à 24 %` à `Dim 1`, ce qui montre que cet axe traduit un `niveau global de bien-être et de développement` : PIB par habitant élevé, bonne santé, fort soutien social, liberté perçue et faible corruption vont tous dans la même direction. 
+Tandis que la deuxième composante (`Dim 2`) s'explique grâce aux indicateurs :
 
-La deuxième composante (`Dim 2`) est dominée par :
+| Variable              | Coordonnée Dim 2 | cos2 Dim 2 | Contribution Dim 2 |
+|:--------------------------|:----------------:|:----------:|:------------------:|
+| `generosity`   |        0,75      |    0,56    |        42,4 %      |  
+| freedom_to_choose     |        0,48      |    0,23    |        17,6 %      |
+| gdp_per_capita        |       -0,44      |    0,19    |        14,7 %      |
+| healthy_life_expectancy |       -0,39      |    0,15    |        11,6 %      |
+| corruption_perception   |       -0,37      |    0,14    |        10,5 %      |
+| social_support          |       -0,21      |    0,04    |         3,2 %      |
 
-- `generosity`, avec un cos2 de 0.56 et une contribution d’environ `42 %` à l’axe 2,
-- `freedom_to_choose`, `gdp_per_capita`, `healthy_life_expectancy` et `corruption_perception`, qui contribuent chacun entre `10 % et 18 %`.
+Dim 2 oppose les pays `très généreux` à ceux qui le sont moins. La générosité domine clairement cet axe, les autres variables jouant un rôle secondaire. On peut l’interpréter comme une `dimension culturelle et sociale` supplémentaire, qui ne se réduit pas au simple niveau de richesse.
 
-`Dim 2` oppose donc principalement les pays `très généreux` (donations, solidarité) à ceux qui le sont moins, tout en tenant compte également de différences en termes de liberté perçue, de richesse et de santé. On peut interpréter cet axe comme une dimension complémentaire, liée à la `générosité et à certains aspects culturels et sociaux` qui ne sont pas entièrement expliqués par le niveau de développement.
+En résumé, pour l'ACP réalisée sur l'année 2015, Dim 1 résume le niveau de développement et de bien-être opposé à la corruption perçue, tandis que Dim 2 capte principalement les différences de générosité entre pays.
 
 7. ##### Cercle des corrélations (plan 1,2)
 
@@ -306,3 +317,5 @@ Le cercle des corrélations confirme ces interprétations :
 - `generosity` est davantage alignée sur Dim 2, ce qui confirme que cette dimension capte surtout des différences de générosité entre les pays.
 
 La plupart des variables sont proches du cercle unité, ce qui signifie qu’elles sont `bien représentées` par les deux premiers axes et que `le plan (1,2)` restitue correctement la structure des corrélations entre les indicateurs de bien-être.
+
+Ce protocole d’ACP sera réutilisé sur les données 2024 afin d’analyser l’évolution sur la décennie.

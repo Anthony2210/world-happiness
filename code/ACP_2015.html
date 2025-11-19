@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Anthony Combes–Aguéra">
 
-<title>Analyse en Composantes Principales - World Happiness 2015</title>
+<title>WORLD HAPPINESS</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -59,18 +58,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="ACP_files/libs/clipboard/clipboard.min.js"></script>
-<script src="ACP_files/libs/quarto-html/quarto.js" type="module"></script>
-<script src="ACP_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="ACP_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
-<script src="ACP_files/libs/quarto-html/popper.min.js"></script>
-<script src="ACP_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="ACP_files/libs/quarto-html/anchor.min.js"></script>
-<link href="ACP_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="ACP_files/libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="ACP_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="ACP_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="ACP_files/libs/bootstrap/bootstrap-9e3ffae467580fdb927a41352e75a2e0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="ACP_2015_files/libs/clipboard/clipboard.min.js"></script>
+<script src="ACP_2015_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="ACP_2015_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="ACP_2015_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="ACP_2015_files/libs/quarto-html/popper.min.js"></script>
+<script src="ACP_2015_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="ACP_2015_files/libs/quarto-html/anchor.min.js"></script>
+<link href="ACP_2015_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="ACP_2015_files/libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="ACP_2015_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="ACP_2015_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="ACP_2015_files/libs/bootstrap/bootstrap-9e3ffae467580fdb927a41352e75a2e0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -83,19 +82,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Analyse en Composantes Principales - World Happiness 2015</h1>
+<h1 class="title"><strong>WORLD HAPPINESS</strong></h1>
+<p class="subtitle lead"><strong>Analyse en Composantes Principales sur l’année 2015</strong></p>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Anthony Combes–Aguéra </p>
-          </div>
-  </div>
     
   
     
@@ -135,7 +129,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>Voici les variables quantitatives restantes :</p>
 <ul>
-<li><code>gpd_per_capita</code></li>
+<li><code>gdp_per_capita</code></li>
 <li><code>social_support</code></li>
 <li><code>healthy_life_expectancy</code></li>
 <li><code>freedom_to_choose</code></li>
@@ -325,7 +319,7 @@ Il est donc possible de concentrer l’analyse graphique sur le plan factoriel (
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ACP_files/figure-html/eboulis%20des%20valeurs%20propres-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ACP_2015_files/figure-html/eboulis%20des%20valeurs%20propres-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -363,7 +357,7 @@ Il est donc possible de concentrer l’analyse graphique sur le plan factoriel (
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ACP_files/figure-html/coordonnees_individus-1.png" class="img-fluid figure-img" width="768"></p>
+<p><img src="ACP_2015_files/figure-html/coordonnees_individus-1.png" class="img-fluid figure-img" width="768"></p>
 </figure>
 </div>
 </div>
@@ -404,12 +398,13 @@ Il est donc possible de concentrer l’analyse graphique sur le plan factoriel (
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ACP_files/figure-html/cos2_individus-1.png" class="img-fluid figure-img" width="768"></p>
+<p><img src="ACP_2015_files/figure-html/cos2_individus-1.png" class="img-fluid figure-img" width="768"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Les pays les mieux représentés sur le plan (1,2) sont par exemple <code>Germany</code>, <code>Australia</code>, <code>Malawi</code>, <code>Canada</code>, <code>Guinea</code>, <code>Ireland</code>, <code>Belgium</code>, <code>Norway</code>, <code>Netherlands</code> ou encore <code>Austria</code>, avec des cos2 supérieurs à 0.95. Pour ces pays, plus de 95 % de leur inertie est expliquée par les deux premières composantes, leur position dans le plan factoriel est donc très fiable.</p>
+<p>Les pays les mieux représentés sur le plan (1,2) sont par exemple <code>Germany</code>, <code>Australia</code>, <code>Malawi</code>, <code>Canada</code>, <code>Guinea</code>, <code>Ireland</code>, <code>Belgium</code>, <code>Norway</code>, <code>Netherlands</code> ou encore <code>Austria</code>, avec des cos2 supérieurs à <code>0.95</code>.</p>
+<p>Pour ces pays, plus de 95 % de leur inertie est expliquée par les deux premières composantes, <code>leur position dans le plan factoriel est donc très fiable</code>.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>cos2_12_ord <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_12, <span class="at">decreasing =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cos2_12_ord, <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -429,13 +424,13 @@ Il est donc possible de concentrer l’analyse graphique sur le plan factoriel (
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ACP_files/figure-html/cos2_individus_suite-1.png" class="img-fluid figure-img" width="768"></p>
+<p><img src="ACP_2015_files/figure-html/cos2_individus_suite-1.png" class="img-fluid figure-img" width="768"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>À l’inverse, certains pays sont très mal projetés sur ce plan. On trouve notamment <code>Mongolia</code>, <code>Vietnam</code>, <code>Georgia</code>, <code>Jamaica</code>, <code>Botswana</code>, <code>Iran</code>, <code>Kyrgyzstan</code>, <code>Colombia</code>, <code>Cyprus</code> ou encore <code>Ecuador</code>, avec des cos2 parfois inférieurs à 0.05. Cela signifie qu’une grande partie de l’information les concernant est portée par les dimensions suivantes (Dim 3, Dim 4, etc.).</p>
-<p>L’interprétation de leur position dans le plan (1,2) doit donc être faite avec prudence, car ce plan ne résume pas bien leur profil sur les variables de bien-être.</p>
+<p>À l’inverse, certains pays sont très mal projetés sur ce plan. On trouve notamment <code>Mongolia</code>, <code>Vietnam</code>, <code>Georgia</code>, <code>Jamaica</code>, <code>Botswana</code>, <code>Iran</code>, <code>Kyrgyzstan</code>, <code>Colombia</code>, <code>Cyprus</code> ou encore <code>Ecuador</code>, avec des cos2 parfois <code>inférieurs à 0.05</code>.</p>
+<p>Cela signifie qu’une grande partie de l’information les concernant est portée par les dimensions suivantes (Dim 3, Dim 4, etc.) L’interprétation de leur position dans le plan (1,2) doit donc être faite avec prudence, car ce plan ne résume pas bien leur profil sur les variables de bien-être.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Facteur de région + palette de couleurs</span></span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>region_fac      <span class="ot">&lt;-</span> <span class="fu">factor</span>(indiv<span class="sc">$</span>region)</span>
@@ -474,7 +469,7 @@ Il est donc possible de concentrer l’analyse graphique sur le plan factoriel (
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ACP_files/figure-html/coordonnees_individus_couleur-1.png" class="img-fluid figure-img" width="768"></p>
+<p><img src="ACP_2015_files/figure-html/coordonnees_individus_couleur-1.png" class="img-fluid figure-img" width="768"></p>
 </figure>
 </div>
 </div>
@@ -525,21 +520,119 @@ generosity               4.11 42.36
 corruption_perception   14.19 10.51</code></pre>
 </div>
 </div>
-<p>Sur le plan des variables, la première composante (Dim 1) oppose les variables :</p>
-<ul>
-<li><code>gdp_per_capita</code> (−0.84, cos2 : 0.70),</li>
-<li><code>healthy_life_expectancy</code> (−0.80, cos2 : 0.64),</li>
-<li><code>social_support</code> (−0.78, cos2 : 0.60),</li>
-<li><code>freedom_to_choose</code> (−0.70, cos2 : 0.49),</li>
-</ul>
-<p>à la variable : - <code>corruption_perception</code> (0.65, cos2 : 0.42).</p>
-<p>Ces variables contribuent chacune de <code>14 % à 24 %</code> à <code>Dim 1</code>, ce qui montre que cet axe traduit un <code>niveau global de bien-être et de développement</code> : PIB par habitant élevé, bonne santé, fort soutien social, liberté perçue et faible corruption vont tous dans la même direction.</p>
-<p>La deuxième composante (<code>Dim 2</code>) est dominée par :</p>
-<ul>
-<li><code>generosity</code>, avec un cos2 de 0.56 et une contribution d’environ <code>42 %</code> à l’axe 2,</li>
-<li><code>freedom_to_choose</code>, <code>gdp_per_capita</code>, <code>healthy_life_expectancy</code> et <code>corruption_perception</code>, qui contribuent chacun entre <code>10 % et 18 %</code>.</li>
-</ul>
-<p><code>Dim 2</code> oppose donc principalement les pays <code>très généreux</code> (donations, solidarité) à ceux qui le sont moins, tout en tenant compte également de différences en termes de liberté perçue, de richesse et de santé. On peut interpréter cet axe comme une dimension complémentaire, liée à la <code>générosité et à certains aspects culturels et sociaux</code> qui ne sont pas entièrement expliqués par le niveau de développement.</p>
+<p>Sur le plan des variables, la première composante (<code>Dim 1</code>) est fortement liée aux indicateurs suivants :</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 32%">
+<col style="width: 24%">
+<col style="width: 16%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: center;">Coordonnée Dim 1</th>
+<th style="text-align: center;">cos2 Dim 1</th>
+<th style="text-align: center;">Contribution Dim 1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>gdp_per_capita</code></td>
+<td style="text-align: center;">-0,84</td>
+<td style="text-align: center;">0,70</td>
+<td style="text-align: center;">23,5 %</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>healthy_life_expectancy</code></td>
+<td style="text-align: center;">-0,80</td>
+<td style="text-align: center;">0,64</td>
+<td style="text-align: center;">21,4 %</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>social_support</code></td>
+<td style="text-align: center;">-0,78</td>
+<td style="text-align: center;">0,60</td>
+<td style="text-align: center;">20,2 %</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>freedom_to_choose</code></td>
+<td style="text-align: center;">-0,70</td>
+<td style="text-align: center;">0,49</td>
+<td style="text-align: center;">16,5 %</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>corruption_perception</code></td>
+<td style="text-align: center;">0,65</td>
+<td style="text-align: center;">0,42</td>
+<td style="text-align: center;">14,2 %</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">generosity</td>
+<td style="text-align: center;">-0,35</td>
+<td style="text-align: center;">0,12</td>
+<td style="text-align: center;">4,1 %</td>
+</tr>
+</tbody>
+</table>
+<p>Dim 1 oppose les pays avec <code>PIB élevé, bonne espérance de vie en bonne santé, fort soutien social et grande liberté perçue</code> et les pays où les scores de <code>corruption_perception</code> sont élevés, donc où la corruption est jugée plus présente.</p>
+<p>Tandis que la deuxième composante (<code>Dim 2</code>) s’explique grâce aux indicateurs :</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 35%">
+<col style="width: 23%">
+<col style="width: 15%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: center;">Coordonnée Dim 2</th>
+<th style="text-align: center;">cos2 Dim 2</th>
+<th style="text-align: center;">Contribution Dim 2</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>generosity</code></td>
+<td style="text-align: center;">0,75</td>
+<td style="text-align: center;">0,56</td>
+<td style="text-align: center;">42,4 %</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">freedom_to_choose</td>
+<td style="text-align: center;">0,48</td>
+<td style="text-align: center;">0,23</td>
+<td style="text-align: center;">17,6 %</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">gdp_per_capita</td>
+<td style="text-align: center;">-0,44</td>
+<td style="text-align: center;">0,19</td>
+<td style="text-align: center;">14,7 %</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">healthy_life_expectancy</td>
+<td style="text-align: center;">-0,39</td>
+<td style="text-align: center;">0,15</td>
+<td style="text-align: center;">11,6 %</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">corruption_perception</td>
+<td style="text-align: center;">-0,37</td>
+<td style="text-align: center;">0,14</td>
+<td style="text-align: center;">10,5 %</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">social_support</td>
+<td style="text-align: center;">-0,21</td>
+<td style="text-align: center;">0,04</td>
+<td style="text-align: center;">3,2 %</td>
+</tr>
+</tbody>
+</table>
+<p>Dim 2 oppose les pays <code>très généreux</code> à ceux qui le sont moins. La générosité domine clairement cet axe, les autres variables jouant un rôle secondaire. On peut l’interpréter comme une <code>dimension culturelle et sociale</code> supplémentaire, qui ne se réduit pas au simple niveau de richesse.</p>
+<p>En résumé, pour l’ACP réalisée sur l’année 2015, Dim 1 résume le niveau de développement et de bien-être opposé à la corruption perçue, tandis que Dim 2 capte principalement les différences de générosité entre pays.</p>
 <ol start="7" type="1">
 <li><h5 id="cercle-des-corrélations-plan-12" class="anchored">Cercle des corrélations (plan 1,2)</h5></li>
 </ol>
@@ -549,7 +642,7 @@ corruption_perception   14.19 10.51</code></pre>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ACP_files/figure-html/cercle_correlations-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ACP_2015_files/figure-html/cercle_correlations-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -561,6 +654,7 @@ corruption_perception   14.19 10.51</code></pre>
 <li><code>generosity</code> est davantage alignée sur Dim 2, ce qui confirme que cette dimension capte surtout des différences de générosité entre les pays.</li>
 </ul>
 <p>La plupart des variables sont proches du cercle unité, ce qui signifie qu’elles sont <code>bien représentées</code> par les deux premiers axes et que <code>le plan (1,2)</code> restitue correctement la structure des corrélations entre les indicateurs de bien-être.</p>
+<p>Ce protocole d’ACP sera réutilisé sur les données 2024 afin d’analyser l’évolution sur la décennie.</p>
 
 </main>
 <!-- /main column -->

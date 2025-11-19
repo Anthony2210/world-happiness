@@ -1,0 +1,318 @@
+---
+title: "**WORLD HAPPINESS**" 
+subtitle: "**Analyse en Composantes Principales sur l'année 2024**"
+format: html
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+library(FactoMineR)
+library(factoextra)
+```
+
+1. ##### Chargement des données et sélection des variables
+
+Le fichier nettoyé dans le notebook `nettoyage_des_données.ipynb`, `world_happiness_2024_clean.csv`, est utilisé dans le cadre de cette seconde ACP.
+
+```{r chargement_des_données}
+data <- "../data/clean/world_happiness_2024_clean.csv"
+df <- read.csv(data, header = TRUE, sep = ";", dec = ",", stringsAsFactors = FALSE)
+names(df)
+
+no_var <- c("rank", "country", "region", "happiness_score", "year")
+pays <- df$country
+```
+
+On ne garde que les colonnes utiles à l'ACP.
+
+```{r chargement_des_données_suite}
+X <- df[, !(names(df) %in% no_var)]
+X <- as.data.frame(lapply(X, function(x) as.numeric(as.character(x))))
+rownames(X) <- pays
+
+n <- nrow(X)
+p <- ncol(X)
+
+summary(X)
+```
+
+2. ##### Standardisation des données et matrice de corrélation
+
+```{r standardisation}
+X_mat <- as.matrix(X)
+ 
+moy <- apply(X_mat, 2, mean)
+moy
+
+ecartype <- apply(X_mat, 2, sd) * sqrt((n - 1) / n)
+ecartype
+
+# Standardisation : Z = (X - moy) / ecartype
+Z <- scale(X_mat, center = moy, scale = ecartype)
+
+# Vérification moyenne et variance
+apply(Z, 2, mean)
+apply(Z, 2, var) * (n - 1) / n
+
+# Matrice des poids (1/n)
+N <- diag(rep(1 / n, n))
+
+# Matrice de corrélation R = Z' N Z
+R <- t(Z) %*% N %*% Z
+
+round(R, 3)
+
+# Comparaison avec cor(X) pour vérifier
+round(cor(X), 3)
+```
+
+3. ##### Décomposition spectrale (valeurs propres, vecteurs propres)
+
+```{r decomposition_spectrale}
+e <- eigen(R)
+
+# Valeurs propres
+lambda <- e$values
+lambda
+
+# Vérification : somme des lambda = p 
+sum(lambda)
+p
+
+# Vecteurs propres
+V <- e$vectors
+
+# Vérification orthonormalité : t(V) %*% V = I
+round(t(V) %*% V, 3)
+
+# Pourcentages d'inertie
+perc <- 100 * lambda / sum(lambda)
+perc_cum <- cumsum(perc)
+
+data.frame(
+  axe = 1:p,
+  lambda = lambda,
+  pourcentage = perc,
+  cumul = perc_cum
+)
+
+```
+
+Les valeurs propres nous montrent que :
+
+- la première composante (`Dim 1`) explique environ `51,0 %` de l’inertie totale,
+- la deuxième composante (`Dim 2`) environ `19,6 %`,
+- au total, les deux premières composantes cumulent donc environ `70,7 %` de l’information.
+
+Les composantes suivantes (`Dim 3 à Dim 6`) apportent chacune moins de `12 %` d’inertie. Comme pour l'ACP réalisée sur l'année 2015, on peut se concentrer sur le plan factoriel (`Dim 1, Dim 2`) qui résume déjà l’essentiel de la variabilité entre les pays.
+
+Par rapport à 2015, `la structure globale est très stable` : 
+
+- le premier axe expliquait environ `49,7 %`,
+- et le deuxième `22,0 %`, 
+- soit un cumul d’environ `71,7 %`. 
+
+On retrouve donc en 2024 deux axes principaux qui concentrent autour de 70 % de l’information.
+
+
+```{r eboulis des valeurs propres}
+barplot(
+  lambda,
+  main = "Éboulis des valeurs propres",
+  xlab = "Composantes",
+  ylab = "Valeur propre"
+)
+```
+
+Le graphique nous conforte dans le choix de nous concentrer sur le plan (1,2), puisque graphiquement on peut utiliser la règle du coude.
+
+4. ##### Coordonnées factorielles des individus
+
+```{r coordonnees_individus, fig.width=8, fig.height=6}
+# Scores factoriels : F = Z V
+F <- Z %*% V
+colnames(F) <- paste0("Dim", 1:p)
+rownames(F) <- rownames(X)
+
+# Vérification des variances des axes = lambda
+apply(F, 2, var) * (n - 1) / n
+lambda[1:6]
+
+pc1 <- perc[1]
+pc2 <- perc[2]
+
+plot(F[,1], F[,2],
+     xlab = sprintf("Dim 1 (%.1f%%)", pc1),
+     ylab = sprintf("Dim 2 (%.1f%%)", pc2),
+     main = "Pays – plan factoriel (1,2)",
+     pch = 16, cex = 0.6)
+abline(h = 0, v = 0, lty = 3)
+text(F[,1], F[,2], labels = rownames(F), pos = 3, cex = 0.6)
+```
+
+5. ##### Qualité de représentation des pays sur le plan (1,2)
+```{r cos2_individus, fig.width=8, fig.height=6}
+# Norme au carré de chaque individu dans l'espace factoriel
+normes_F2 <- rowSums(F^2)
+
+# cos2 sur le plan (1,2)
+cos2_12 <- (F[,1]^2 + F[,2]^2) / normes_F2
+
+# pays les mieux représentés sur le plan (1,2)
+cos2_12_ord <- sort(cos2_12, decreasing = TRUE)
+head(cos2_12_ord, 10)
+
+indiv <- data.frame(
+  country = rownames(F),
+  Dim1    = F[, 1],
+  Dim2    = F[, 2],
+  cos2_12 = cos2_12,
+  region  = df$region
+)
+cos2_vec <- setNames(indiv$cos2_12, indiv$country)
+cos2_ordonnes <- sort(cos2_vec, decreasing = TRUE)
+barplot(cos2_ordonnes[1:20],
+        las = 2,
+        cex.names = 0.6,
+        main = "20 pays les mieux projetés sur le plan (1,2)",
+        ylab = "cos2 (Dim1, Dim2)")
+```
+
+En 2024, les pays les mieux représentés sur le plan (1,2) sont par exemple `Sierra Leone`, `Liberia`, `Guinea`, `Australia`, `Belgium`, `Cameroon`, `Taiwan`, `Poland`, `Senegal` ou encore `Spain`, avec des cos2 souvent supérieurs à `0,95`.
+
+Pour ces pays, plus de 95 % de leur inertie est expliquée par les deux premières composantes, `leur position dans le plan factoriel est donc très fiable`.
+
+En 2015, on trouvait déjà des pays très bien projetés (`Germany`, `Australia`, `Canada`, `Norway`, etc.), mais plutôt concentrés parmi les pays riches. En 2024, on voit apparaître parmi les meilleurs cos2 plusieurs pays africains (`Sierra Leone`, `Liberia`, `Guinea`, `Cameroon`, `Senegal`), ce qui reflète aussi une dispersion plus forte de ces pays sur les deux premiers axes.
+
+```{r cos2_individus_suite, fig.width=8, fig.height=6}
+cos2_12_ord <- sort(cos2_12, decreasing = FALSE)
+head(cos2_12_ord, 10)
+
+cos2_pires <- sort(cos2_vec, decreasing = FALSE)
+
+barplot(cos2_pires[1:20],
+        las = 2,
+        cex.names = 0.6,
+        main = "20 pays les moins bien projetés sur le plan (1,2)",
+        ylab = "cos2 (Dim1, Dim2)")
+
+```
+
+À l’inverse, certains pays sont très mal projetés sur ce plan. On trouve notamment `North Macedonia`, `Philippines`, `El Salvador`, `Albania`, `Vietnam`, `Iran`, `Bosnia and Herzegovina`, `Paraguay`, `Mongolia` ou encore `Guatemala`, avec des cos2 parfois `inférieurs à 0,1`. 
+
+Cela signifie qu’une grande partie de l’information les concernant est portée par les dimensions suivantes (Dim 3, Dim 4, etc.). L’interprétation de leur position dans le plan (1,2) doit donc être faite avec prudence, car ce plan ne résume pas bien leur profil sur les variables de bien-être.
+
+La situation est similaire à 2015 : on trouvait déjà des pays avec des cos2 très faibles sur le premier plan (par exemple `Mongolia`, `Vietnam`, `Georgia`, etc.). Dans les deux ACP, le plan (1,2) ne suffit pas à résumer le profil de tous les pays.
+
+```{r coordonnees_individus_couleur, fig.width=8, fig.height=6}
+# Facteur de région + palette de couleurs
+region_fac      <- factor(indiv$region)
+palette_region  <- rainbow(length(levels(region_fac)))
+col_region      <- palette_region[region_fac]
+
+pc1 <- perc[1]
+pc2 <- perc[2]
+
+plot(indiv$Dim1, indiv$Dim2,
+     xlab = sprintf("Dim 1 (%.1f%%)", pc1),
+     ylab = sprintf("Dim 2 (%.1f%%)", pc2),
+     main = "Pays – plan factoriel (1,2) coloré par région",
+     pch  = 16,
+     cex  = 0.7,
+     col  = col_region)
+abline(h = 0, v = 0, lty = 3)
+
+# Labels seulement pour les pays bien représentés (cos2 >= 0.7)
+bien_repr <- indiv$cos2_12 >= 0.7
+
+text(indiv$Dim1[bien_repr],
+     indiv$Dim2[bien_repr],
+     labels = indiv$country[bien_repr],
+     pos = 3, cex = 0.6)
+
+# Légende des régions
+legend("topleft",
+       legend = levels(region_fac),
+       col    = palette_region,
+       pch    = 16,
+       bty    = "n",
+       cex    = 0.6,
+       ncol   = 2,      
+       xpd    = TRUE)  
+
+```
+
+Les pays sont colorés par grande région géographique donné par le jeu de donnée.
+Seuls les pays bien représentés par le plan (cos2 >= 0,7) sont étiquetés.
+
+6. ##### Coordonnées factorielles des variables
+
+```{r coordonnees_variables}
+# Coordonnées des variables sur les axes
+var_coord <- V %*% diag(sqrt(lambda))
+rownames(var_coord) <- colnames(X)
+colnames(var_coord) <- paste0("Dim", 1:p)
+
+round(var_coord, 3)
+
+# cos2 des variables sur les deux premiers axes
+var_cos2 <- var_coord^2
+round(var_cos2[, 1:2], 3)
+
+# Contributions des variables aux axes 1 et 2
+# contrib(j,k) = coord(j,k)^2 / lambda_k
+var_contrib <- sweep(var_coord^2, 2, lambda, FUN = "/") * 100
+round(var_contrib[, 1:2], 2)
+```
+
+Sur le plan des variables, la première composante (Dim 1) est fortement corrélée à :
+
+| Variable     | Coordonnée Dim 1 | cos2 Dim 1 |Contribution Dim 1| 
+|:-------------|:-----------:|:----:|:----:|
+| `gdp_per_capita`    | -0,90  | 0,81    |26% |
+| `healthy_life_expectancy` | -0,88  | 0,78     |25% |
+| `social_support`    | −0,85  | 0,72   |23%|
+| `freedom_to_choose` | −0,63  | 0,40    |13%|
+| `corruption_perception` | −0,59  | 0,35     |11%|
+| generosity | −0,12  | 0,01     |0%|
+
+Dim 1 traduit donc un `niveau global de développement et de bien-être ainsi qu'une perception de la corruption assez importante`. Cela signifie que les pays les plus riches, en meilleure santé, avec un bon soutien social et une forte liberté perçue sont aussi ceux où les citoyens déclarent voir davantage de corruption.
+
+La deuxième composante (`Dim 2`) est dominée par :
+
+| Variable     | Coordonnée Dim 2 | cos2 Dim 2 | Contribution Dim 2 |
+|:-------------------------|:-----------------:|:-----------:|:------------------:|
+| `generosity`      |            0,89  |      0,80  |              68 %  |
+| freedom_to_choose   |            0,38  |      0,14  |              12 %  |
+| corruption_perception  |            0,32  |      0,10  |               9 %  |
+| gdp_per_capita    |           -0,25  |      0,06  |               5 %  |
+| healthy_life_expectancy|           -0,25  |      0,07  |               5 %  |
+| social_support  |           -0,10  |      0,01  |               1 %  |
+
+Tout comme en 2015, `Dim 2` oppose les pays `très généreux` à ceux qui le sont moins. La générosité domine clairement cet axe, les autres variables jouant un rôle secondaire. On peut l’interpréter comme une `dimension culturelle et sociale` supplémentaire, qui ne se réduit pas au simple niveau de richesse.
+
+La principale évolution concerne la variable `corruption_perception` :  
+en 2015, elle était projetée du côté `opposé` aux variables de développement sur Dim 1, alors qu’en 2024 elle est désormais `alignée` avec elles.
+
+Cela suggère qu’en fin de décennie, les pays les plus développés sont aussi ceux où les citoyens déclarent davantage percevoir de la corruption.
+
+7. ##### Cercle des corrélations (plan 1,2)
+
+```{r cercle_correlations}
+res_pca <- PCA(X, scale.unit = TRUE, ncp = p, graph = FALSE)
+plot(res_pca, choix = "var", main = "Cercle des corrélations")
+```
+
+Le cercle des corrélations confirme ces interprétations :
+
+- les variables `gdp_per_capita`, `social_support` et `healthy_life_expectancy` sont fortement corrélées entre elles et très bien projetées sur Dim 1,
+- `generosity` est davantage alignée sur Dim 2, ce qui confirme que cette dimension capte surtout des différences de générosité entre les pays,
+- puis `freedom_to_choose` et `corruption_perception` qui se retrouvent entre les deux blocs. On peut observer que la perception de corruption a évolué, la variable était située à l'opposé de la direction générale en 2015. 
+
+La plupart des variables sont proches du cercle unité, ce qui signifie qu’elles sont `bien représentées` par les deux premiers axes et que `le plan (1,2)` restitue correctement la structure des corrélations entre les indicateurs de bien-être.
+
+Par rapport à 2015, on retrouve la même opposition entre un axe 1 `développement et bien-être` et un axe 2 `générosité`. La principale évolution concerne la position de `corruption_perception`, qui était opposée au bloc de développement en 2015, alors qu’elle est désormais plutôt alignée avec lui en 2024.
