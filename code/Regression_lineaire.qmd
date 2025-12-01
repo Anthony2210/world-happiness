@@ -1,0 +1,268 @@
+---
+title: "**WORLD HAPPINESS**"
+subtitle: "**Régression linéaire et choix de modèle**"
+format: html
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+library(FactoMineR)
+library(factoextra)
+library(car)        
+library(MASS)     
+library(leaps) 
+library(broom)
+library(ggplot2)
+
+```
+
+1. ##### Chargement des données et sélection des variables
+
+Le fichier nettoyé dans le notebook `nettoyage_des_données.ipynb`, `world_happiness_2015_clean.csv`, est utilisé dans le cadre de cette première régression linéaire.
+
+```{r data-2015}
+data15 <- "../data/clean/world_happiness_2015_clean.csv"
+df15 <- read.csv(data15, header = TRUE, sep = ";", dec = ",", stringsAsFactors = FALSE)
+
+# Variable réponse : happiness_score
+# Variables explicatives : les mêmes que pour l’ACP
+mod_2015 <- lm(happiness_score ~ gdp_per_capita + social_support +
+                 healthy_life_expectancy + freedom_to_choose +
+                 generosity + corruption_perception,
+               data = df15)
+
+summary(mod_2015)
+```
+
+En 2015, le modèle explique environ `78 %` de la variabilité du score de bonheur (R² = 0,78, R² ajusté = 0,77). Le test global de Fisher est très significatif, ce qui confirme que le modèle linéaire a une bonne qualité d’ajustement.
+
+Les variables suivantes ont un effet positif et significatif sur le score de bonheur :
+
+- `gdp_per_capita` : à niveau de vie plus élevé, le score de bonheur augmente en moyenne,
+- `social_support` : c’est l’un des `effets les plus forts du modèle`, un bon soutien social est associé à un niveau de bonheur nettement plus élevé,
+- `healthy_life_expectancy` : une espérance de vie en bonne santé plus longue est aussi liée à un score de bonheur plus élevé,
+- `freedom_to_choose` : le fait de se sentir libre de faire ses choix de vie a également un effet positif significatif.
+
+La variable `generosity` n’est pas significative dans ce modèle. À profil comparable sur les autres variables explicatives, la générosité ne permet pas d’expliquer des différences supplémentaires de bonheur en 2015.
+
+Enfin, `corruption_perception` a un `effet négatif significatif`: les pays où les citoyens déclarent davantage percevoir de corruption ont, à caractéristiques comparables, un score de bonheur plus faible. Cela est cohérent avec l’idée qu’un contexte institutionnel perçu comme corrompu est associé à un bien-être subjectif plus bas.
+
+Pour comparer, on répète ce modèle pour le fichier `world_happiness_2024_clean.csv`.
+```{r data-2024}
+data24 <- "../data/clean/world_happiness_2024_clean.csv"
+df24 <- read.csv(data24, header = TRUE, sep = ";", dec = ",", stringsAsFactors = FALSE)
+
+mod_2024 <- lm(happiness_score ~ gdp_per_capita + social_support +
+                 healthy_life_expectancy + freedom_to_choose +
+                 generosity + corruption_perception,
+               data = df24)
+
+summary(mod_2024)
+```
+
+En 2024, le modèle explique environ `82 %` de la variabilité du score de bonheur (R² = 0,82, R² ajusté = 0,81), soit légèrement plus qu’en 2015. Le test global de Fisher reste très significatif.
+
+On retrouve des effets positifs pour :
+
+- `gdp_per_capita` : à niveau de vie plus élevé, et à caractéristiques comparables sur les autres variables, le score de bonheur augmente en moyenne,
+- `social_support` : son coefficient est encore plus élevé qu’en 2015, ce qui confirme le rôle central du soutien social dans l’explication du bonheur,
+- `healthy_life_expectancy` : l’effet reste positif mais devient moins nettement significatif,
+- `freedom_to_choose` : son effet est encore plus marqué qu’en 2015, la liberté perçue devient un déterminant majeur du score de bonheur.
+
+La variable `generosity` est à nouveau non significative en 2024, ce qui confirme que, une fois contrôlés le niveau de vie, la santé, le soutien social et la liberté perçue, la générosité n’apporte pas d’information supplémentaire pour expliquer le bonheur.
+
+Le point le plus remarquable est le `changement de signe` de `corruption_perception` entre 2015 et 2024. En 2024, le coefficient est `positif et significatif` : à caractéristiques comparables, les pays où la corruption est davantage perçue comme présente ont des scores de bonheur plus élevés. Ce résultat est contre-intuitif et doit être interprété avec prudence. Il peut s’expliquer par des phénomènes de colinéarité entre les variables explicatives (par exemple le fait que les pays riches et très libres déclarent davantage percevoir la corruption), ou par une évolution réelle de la relation entre bien-être et confiance dans les institutions.
+
+En résumé, `entre 2015 et 2024`, le pouvoir explicatif du modèle augmente légèrement (R² passe d’environ 0,78 à 0,82) et le rôle des variables reste globalement stable : le soutien social et la liberté de choix sont des déterminants majeurs du bonheur. La principale rupture concerne la relation avec `corruption_perception`, qui change de signe entre les deux années.
+
+
+
+2. ##### Validation des modèles linéaires (graphes de résidus)
+
+- Pour le modèle 2025 : 
+```{r diagnostic-2015-1}
+# Résidus / valeurs ajustées
+plot(mod_2015, which = 1)
+```
+
+Le graphique Résidus / valeurs ajustées montre un nuage centré autour de 0, sans structure très marquée. On observe bien une légère courbure mais la relation linéaire reste acceptable.
+
+```{r diagnostic-2015-2}
+# QQ-plot des résidus 
+plot(mod_2015, which = 2)
+```
+
+Le QQ-plot des résidus est assez proche de la droite théorique, avec quelques écarts aux extrémités (pour quelques pays extrêmes). L’hypothèse de normalité des résidus est donc raisonnablement vérifiée.
+
+```{r diagnostic-2015-3}
+# Scale-Location
+plot(mod_2015, which = 3)
+```
+
+Le graphique Scale–Location ne met pas en évidence d’hétéroscédasticité forte : la dispersion des résidus standardisés reste d’ordre comparable pour les valeurs ajustées faibles et élevées. La variance peut être considérée comme constante.
+
+```{r diagnostic-2015-4}
+# Résidus standardisés / leverage
+plot(mod_2015, which = 5)
+```
+
+Enfin, le graphe Résidus standardisés / leverage montre quelques observations avec un leverage un peu plus élevé que les autres, mais aucune n’a une distance de Cook très importante. Certains pays sont potentiellement influents, mais ils ne remettent pas en cause le modèle.
+
+
+- Pour le modèle 2024 :
+```{r diagnostic-2024-1}
+# Résidus / valeurs ajustées
+plot(mod_2024, which = 1)
+```
+
+Pour 2024, le graphique Résidus / valeurs ajustées présente un motif un peu plus marqué. Les résidus ont tendance à être positifs pour les scores de bonheur faibles puis plutôt négatifs pour les scores élevés. Cela suggère qu’une simple relation linéaire ne capture pas parfaitement la structure des données.
+
+```{r diagnostic-2024-2}
+# QQ-plot des résidus 
+plot(mod_2024, which = 2)
+```
+
+Le QQ-plot des résidus est assez proche de la droite théorique, avec quelques écarts aux extrémités (pour quelques pays extrêmes). L’hypothèse de normalité des résidus est donc raisonnablement vérifiée.
+
+```{r diagnostic-2024-3}
+# Scale-Location
+plot(mod_2024, which = 3)
+```
+
+Le graphique Scale–Location indique une variabilité légèrement plus forte des résidus pour certains niveaux de bonheur, ce qui pointe vers une hétéroscédasticité modérée.
+
+```{r diagnostic-2024-4}
+# Résidus standardisés / leverage
+plot(mod_2024, which = 5)
+```
+
+Le graphe Résidus standardisés / leverage met en évidence un petit nombre de pays avec un leverage relativement élevé.
+
+En résumé, le modèle linéaire explique bien le score de bonheur en 2015 et 2024, mais les diagnostics graphiques suggèrent qu’en 2024 la relation est un peu moins bien captée : légère non-linéarité et hétéroscédasticité modérée. Le modèle reste exploitable, mais les résultats doivent être interprétés avec plus de prudence.
+
+2. ##### Choix de modèle linéaire pour 2015 et 2024
+
+On réduit d’abord le modèle en retirant la variable `generosity`, qui n’était pas significative dans le modèle complet.
+
+```{r choix-modèle-2015}
+mod_2015_red <- lm(happiness_score ~ gdp_per_capita +
+                     social_support +
+                     healthy_life_expectancy +
+                     freedom_to_choose +
+                     corruption_perception,
+                   data = df15)
+
+summary(mod_2015_red)
+
+# Comparaison AIC / BIC entre modèle complet et réduit
+AIC(mod_2015, mod_2015_red)
+BIC(mod_2015, mod_2015_red)
+
+# Sélection automatique par AIC (stepwise, départ du modèle complet)
+mod_2015_step <- stepAIC(mod_2015,
+                         direction = "both",
+                         trace = FALSE)
+
+summary(mod_2015_step)
+```
+
+En 2015, le modèle réduit conserve cinq variables explicatives toutes significatives au seuil de 5 % :
+
+- `social_support` : la variable qui a l'effet le plus fort, un bon soutien social est associé à un score de bonheur nettement plus élevé, 
+- `freedom_to_choose` : la liberté perçue de faire ses choix de vie augmente le bonheur 
+- `corruption_perception` : le coefficient est négatif, une resentiment de corruption est associée à un niveau de bonheur plus faible, 
+- `gdp_per_capita` : un niveau de vie plus élevé augmente le score de bonheur 
+- `healthy_life_expectancy` : une espérance de vie en bonne santé plus longue est liée à un bonheur plus élevé
+
+La variable `generosity` n’apporte aucune explication statistique une fois les autres variables contrôlées.
+
+Le pouvoir explicatif du modèle reste très élevé, avec un R² proche de 0,78 et un R² ajusté proche de 0,77.
+
+Les critères AIC et BIC sont légèrement plus faibles pour le modèle réduit que pour le modèle complet, et la sélection automatique par AIC (stepAIC) retrouve exactement ce même modèle.
+
+On retient donc pour 2015, le modèle final est robuste, parcimonieux, et explique 78 % du bonheur mondial.
+
+
+On refait le protocole pour l'année 2024, en retirant encore une fois la variable `generosity`, qui n’était pas significative dans le modèle complet.
+
+
+```{r choix-modèle-2024}
+mod_2024_red <- lm(happiness_score ~ gdp_per_capita +
+                     social_support +
+                     healthy_life_expectancy +
+                     freedom_to_choose +
+                     corruption_perception,
+                   data = df24)
+
+summary(mod_2024_red)
+
+# Comparaison AIC / BIC entre modèle complet et réduit
+AIC(mod_2024, mod_2024_red)
+BIC(mod_2024, mod_2024_red)
+
+# Sélection automatique par AIC (stepwise, départ du modèle complet)
+mod_2024_step <- stepAIC(mod_2024,
+                         direction = "both",
+                         trace = FALSE)
+
+summary(mod_2024_step)
+```
+
+3. ##### Vérification de la colinéarité, VIF
+
+```{r vif}
+vif(mod_2015_red)
+vif(mod_2024_red)
+```
+
+Aucun VIF ne dépasse 5, il n'y a pas de colinéarité importante. Cependant, les variables `gdp_per_capita` et `healthy_life_expectancy` sont proches de 4, ce qui confirmerait une corrélation structurelle importante entre richesse, santé et développement humain.
+
+On observe qu'en 2024, la colinéarité est légèrement plus forte qu’en 2015, notamment pour les varibles `social_support` et `healthy_life_expectancy`.
+
+
+4. ##### Comparaison des coefficients 2015 et 2024
+
+```{r coef}
+coef15 <- tidy(mod_2015_red)
+coef24 <- tidy(mod_2024_red)
+
+coef15$year <- 2015
+coef24$year <- 2024
+coef_all <- rbind(coef15, coef24)
+
+ggplot(coef_all[coef_all$term != "(Intercept)", ],
+       aes(x = term, y = estimate, fill = as.factor(year))) +
+  geom_bar(stat="identity", position="dodge") +
+  coord_flip() +
+  labs(title="Comparaison des coefficients 2015 / 2024",
+       fill="Année")
+```
+
+L’évolution de la relation entre corruption perçue et bonheur ne traduit probablement pas un phénomène réel, mais plutôt une redistribution de variance entre variables corrélées en 2024.
+
+5. ##### Test d'un modèle avec interactions
+
+Au vu de la non linéarité et du changements du signe de 2024, on test : 
+
+```{r interaction}
+mod_2024_int <- lm(happiness_score ~ gdp_per_capita * freedom_to_choose +
+                     social_support + healthy_life_expectancy +
+                     corruption_perception,
+                   data = df24)
+
+summary(mod_2024_int)
+AIC(mod_2024_red, mod_2024_int)
+```
+
+On observe que l'Interaction est marginalement significative (p = 0.077). La variable `healthy_life_expectancy` devient presque significative (p = 0.056). Le R² ajusté reste très similaire (0.814). L’AIC baisse (190.28 contre 191.58), le modèle avec interaction donc est meilleur.
+
+Cela signifie que l’effet de la liberté perçue sur le bonheur dépend du niveau économique du pays. Concrètement, la liberté contribue encore plus au bien-être dans les pays les plus riches.
+
+
+6. ##### Modèle sur la décennie entière, de 2015 à 2024
+
+Dans cette dernière partie, on exploite le jeu de données sur l'ensemble de la décennie 2015–2024 afin de tenir compte à la fois des différences entre pays et de l’évolution temporelle du bonheur.
