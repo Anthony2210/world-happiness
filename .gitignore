@@ -2,6 +2,7 @@
 .env
 
 data/
+figure/
 *.csv
 *.xlsx
 
