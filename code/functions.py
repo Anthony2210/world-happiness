@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
+# TRAITEMENT DONNÉES
 def clean_name(x: str) -> str:
     """Harmonise les noms de pays pour toutes les sources externes."""
     if pd.isna(x):
@@ -125,6 +125,17 @@ def download_wdi(indicator: str, start: int = 2015, end: int = 2023) -> pd.DataF
 
     return df
 
+def merge_wdi(df, indicator, new_name=None, start=2015, end=2023):
+    wdi = download_wdi(indicator, start=start, end=end)
+    col = indicator
+    if new_name is not None and new_name != indicator:
+        wdi = wdi.rename(columns={indicator: new_name})
+        col = new_name
+    return df.merge(wdi[["country", "year", col]], on=["country", "year"], how="left")
+
+
+
+# GRAPHIQUE 
 
 def plot_profil(
     data: pd.DataFrame,

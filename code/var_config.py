@@ -61,7 +61,7 @@ ALL_VAR_CONFIG = {
     },
     "co2_emissions_per_capita": {
         "color": "#000000",
-        "label": "Émissions de CO₂ par habitant"
+        "label": "Émissions de CO2 par habitant"
     },
     "temperature_change_from_ghg": {
         "color": "#24ffbd",
