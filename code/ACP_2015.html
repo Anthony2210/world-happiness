@@ -105,16 +105,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 <p>Le fichier nettoyé dans le notebook <code>nettoyage_des_données.ipynb</code>, <code>world_happiness_2015_clean.csv</code>, est utilisé dans le cadre de cette première ACP.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="st">"../data/clean/world_happiness_2015_clean.csv"</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(data, <span class="at">header =</span> <span class="cn">TRUE</span>, <span class="at">sep =</span> <span class="st">";"</span>, <span class="at">dec =</span> <span class="st">","</span>, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">".."</span>, <span class="st">"data"</span>, <span class="st">"clean"</span>, <span class="st">"world_happiness_2015_clean.csv"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(data, <span class="at">header =</span> <span class="cn">TRUE</span>, <span class="at">sep =</span> <span class="st">";"</span>, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] "rank"                    "country"                
- [3] "region"                  "happiness_score"        
- [5] "gdp_per_capita"          "social_support"         
- [7] "healthy_life_expectancy" "freedom_to_choose"      
- [9] "generosity"              "corruption_perception"  
-[11] "year"                   </code></pre>
+<pre><code> [1] "rank"                        "country"                    
+ [3] "happiness_score"             "freedom_to_choose"          
+ [5] "generosity"                  "year"                       
+ [7] "region"                      "cpi"                        
+ [9] "life_expectancy"             "gdp_log"                    
+[11] "unemployment_rate"           "active_population_rate"     
+[13] "urban_population_rate"       "voice_accountability"       
+[15] "government_effectiveness"    "co2_emissions_per_capita"   
+[17] "temperature_change_from_ghg"</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>no_var <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rank"</span>, <span class="st">"country"</span>, <span class="st">"region"</span>, <span class="st">"happiness_score"</span>, <span class="st">"year"</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pays <span class="ot">&lt;-</span> df<span class="sc">$</span>country</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -129,12 +132,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>Voici les variables quantitatives restantes :</p>
 <ul>
-<li><code>gdp_per_capita</code></li>
-<li><code>social_support</code></li>
-<li><code>healthy_life_expectancy</code></li>
 <li><code>freedom_to_choose</code></li>
 <li><code>generosity</code></li>
-<li><code>corruption_perception</code></li>
+<li><code>cpi</code></li>
+<li><code>life_expectancy</code></li>
+<li><code>gdp_log</code></li>
+<li><code>unemployment_rate</code></li>
+<li><code>active_population_rate</code></li>
+<li><code>urban_population_rate</code></li>
+<li><code>voice_accountability</code></li>
+<li><code>government_effectiveness</code></li>
+<li><code>co2_emissions_per_capita</code></li>
+<li><code>temperature_change_from_ghg</code></li>
 </ul>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> df[, <span class="sc">!</span>(<span class="fu">names</span>(df) <span class="sc">%in%</span> no_var)]</span>
@@ -146,23 +155,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> gdp_per_capita    social_support   healthy_life_expectancy freedom_to_choose
- Min.   :0.09487   Min.   :0.0998   Min.   :39.00           Min.   :0.0000   
- 1st Qu.:3.63102   1st Qu.:0.6324   1st Qu.:59.50           1st Qu.:0.4958   
- Median :5.55657   Median :0.7442   Median :65.00           Median :0.6514   
- Mean   :5.21988   Mean   :0.7220   Mean   :62.87           Mean   :0.6511   
- 3rd Qu.:6.94472   3rd Qu.:0.8822   3rd Qu.:70.00           3rd Qu.:0.8248   
- Max.   :9.25162   Max.   :1.0000   Max.   :76.00           Max.   :1.0000   
-   generosity     corruption_perception
- Min.   :0.0000   Min.   :0.1084       
- 1st Qu.:0.1812   1st Qu.:0.6986       
- Median :0.2746   Median :0.8337       
- Mean   :0.2996   Mean   :0.7612       
- 3rd Qu.:0.3983   3rd Qu.:0.8955       
- Max.   :1.0000   Max.   :1.0000       </code></pre>
+<pre><code> freedom_to_choose   generosity          cpi        life_expectancy
+ Min.   :0.0000    Min.   :0.0000   Min.   :11.00   Min.   :51.32  
+ 1st Qu.:0.4996    1st Qu.:0.1831   1st Qu.:31.00   1st Qu.:69.24  
+ Median :0.6702    Median :0.2746   Median :38.00   Median :74.87  
+ Mean   :0.6568    Mean   :0.3009   Mean   :46.44   Mean   :73.03  
+ 3rd Qu.:0.8283    3rd Qu.:0.4058   3rd Qu.:60.00   3rd Qu.:80.34  
+ Max.   :1.0000    Max.   :1.0000   Max.   :91.00   Max.   :84.15  
+    gdp_log       unemployment_rate active_population_rate
+ Min.   : 7.294   Min.   : 0.393    Min.   :48.36         
+ 1st Qu.: 8.778   1st Qu.: 3.790    1st Qu.:61.47         
+ Median : 9.680   Median : 5.802    Median :65.56         
+ Mean   : 9.653   Mean   : 7.496    Mean   :63.86         
+ 3rd Qu.:10.526   3rd Qu.: 9.376    3rd Qu.:67.45         
+ Max.   :11.776   Max.   :27.695    Max.   :81.66         
+ urban_population_rate voice_accountability government_effectiveness
+ Min.   : 15.83        Min.   :-1.9563      Min.   :-1.491039       
+ 1st Qu.: 47.57        1st Qu.:-0.4626      1st Qu.:-0.692134       
+ Median : 64.49        Median : 0.1470      Median :-0.002613       
+ Mean   : 61.80        Mean   : 0.1118      Mean   : 0.140291       
+ 3rd Qu.: 79.25        3rd Qu.: 0.9740      3rd Qu.: 0.977552       
+ Max.   :100.00        Max.   : 1.6881      Max.   : 2.248699       
+ co2_emissions_per_capita temperature_change_from_ghg
+ Min.   : 0.06145         Min.   :5.114e-05          
+ 1st Qu.: 0.88260         1st Qu.:1.036e-03          
+ Median : 3.36181         Median :2.498e-03          
+ Mean   : 4.67962         Mean   :1.097e-02          
+ 3rd Qu.: 6.70526         3rd Qu.:7.256e-03          
+ Max.   :25.94287         Max.   :2.689e-01          </code></pre>
 </div>
 </div>
-<p>Ces variables sont sur des échelles différentes, la standardisation est indispensable avant de réaliser l’ACP.</p>
+<p>Après avoir isolé les variables quantitatives utiles pour l’ACP, on prépare les données pour rendre les variables comparables entre elles. Les variables n’étant pas sur les mêmes échelles, la prochaine étape consistera à standardiser les données avant de calculer la matrice de corrélation.</p>
 <ol start="2" type="1">
 <li><h5 id="standardisation-des-données-et-matrice-de-corrélation" class="anchored">Standardisation des données et matrice de corrélation</h5></li>
 </ol>
@@ -173,18 +196,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>moy <span class="ot">&lt;-</span> <span class="fu">apply</span>(X_mat, <span class="dv">2</span>, mean)</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>moy</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         gdp_per_capita          social_support healthy_life_expectancy 
-              5.2198778               0.7219896              62.8661417 
-      freedom_to_choose              generosity   corruption_perception 
-              0.6511372               0.2995669               0.7612169 </code></pre>
+<pre><code>          freedom_to_choose                  generosity 
+                 0.65679968                  0.30089568 
+                        cpi             life_expectancy 
+                46.44000000                 73.03080720 
+                    gdp_log           unemployment_rate 
+                 9.65274568                  7.49554400 
+     active_population_rate       urban_population_rate 
+                63.86026876                 61.80146644 
+       voice_accountability    government_effectiveness 
+                 0.11182236                  0.14029071 
+   co2_emissions_per_capita temperature_change_from_ghg 
+                 4.67961882                  0.01097247 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>ecartype <span class="ot">&lt;-</span> <span class="fu">apply</span>(X_mat, <span class="dv">2</span>, sd) <span class="sc">*</span> <span class="fu">sqrt</span>((n <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> n)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>ecartype</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         gdp_per_capita          social_support healthy_life_expectancy 
-              2.2320642               0.1908510               8.3810455 
-      freedom_to_choose              generosity   corruption_perception 
-              0.2198149               0.1611554               0.2084029 </code></pre>
+<pre><code>          freedom_to_choose                  generosity 
+                 0.21867259                  0.16096175 
+                        cpi             life_expectancy 
+                19.99976000                  7.90717006 
+                    gdp_log           unemployment_rate 
+                 1.09739901                  5.60819345 
+     active_population_rate       urban_population_rate 
+                 6.40499528                 21.42745317 
+       voice_accountability    government_effectiveness 
+                 0.91022875                  0.97329618 
+   co2_emissions_per_capita temperature_change_from_ghg 
+                 4.96240008                  0.03078013 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Standardisation : Z = (X - moy) / ecartype</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>Z <span class="ot">&lt;-</span> <span class="fu">scale</span>(X_mat, <span class="at">center =</span> moy, <span class="at">scale =</span> ecartype)</span>
@@ -192,17 +231,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification moyenne et variance</span></span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(Z, <span class="dv">2</span>, mean)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         gdp_per_capita          social_support healthy_life_expectancy 
-          -3.281120e-17           -5.182657e-17           -2.509322e-16 
-      freedom_to_choose              generosity   corruption_perception 
-          -1.964019e-16            1.607885e-16           -1.531790e-16 </code></pre>
+<pre><code>          freedom_to_choose                  generosity 
+               8.975026e-18               -9.775167e-19 
+                        cpi             life_expectancy 
+               1.122501e-16                3.037761e-16 
+                    gdp_log           unemployment_rate 
+              -5.500288e-17                6.346659e-17 
+     active_population_rate       urban_population_rate 
+              -2.737220e-17               -6.106921e-17 
+       voice_accountability    government_effectiveness 
+              -7.121040e-19                2.501124e-17 
+   co2_emissions_per_capita temperature_change_from_ghg 
+               4.289884e-17                7.342217e-18 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(Z, <span class="dv">2</span>, var) <span class="sc">*</span> (n <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> n</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         gdp_per_capita          social_support healthy_life_expectancy 
-                      1                       1                       1 
-      freedom_to_choose              generosity   corruption_perception 
-                      1                       1                       1 </code></pre>
+<pre><code>          freedom_to_choose                  generosity 
+                          1                           1 
+                        cpi             life_expectancy 
+                          1                           1 
+                    gdp_log           unemployment_rate 
+                          1                           1 
+     active_population_rate       urban_population_rate 
+                          1                           1 
+       voice_accountability    government_effectiveness 
+                          1                           1 
+   co2_emissions_per_capita temperature_change_from_ghg 
+                          1                           1 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Matrice des poids (1/n)</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="fu">rep</span>(<span class="dv">1</span> <span class="sc">/</span> n, n))</span>
@@ -212,43 +267,157 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(R, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                        gdp_per_capita social_support healthy_life_expectancy
-gdp_per_capita                   1.000          0.651                   0.831
-social_support                   0.651          1.000                   0.541
-healthy_life_expectancy          0.831          0.541                   1.000
-freedom_to_choose                0.318          0.484                   0.317
-generosity                       0.020          0.131                   0.106
-corruption_perception           -0.405         -0.273                  -0.325
-                        freedom_to_choose generosity corruption_perception
-gdp_per_capita                      0.318      0.020                -0.405
-social_support                      0.484      0.131                -0.273
-healthy_life_expectancy             0.317      0.106                -0.325
-freedom_to_choose                   1.000      0.425                -0.536
-generosity                          0.425      1.000                -0.298
-corruption_perception              -0.536     -0.298                 1.000</code></pre>
+<pre><code>                            freedom_to_choose generosity   cpi life_expectancy
+freedom_to_choose                       1.000      0.430 0.512           0.348
+generosity                              0.430      1.000 0.213           0.096
+cpi                                     0.512      0.213 1.000           0.694
+life_expectancy                         0.348      0.096 0.694           1.000
+gdp_log                                 0.351      0.061 0.777           0.879
+unemployment_rate                      -0.420     -0.360 0.062           0.225
+active_population_rate                  0.241      0.038 0.413           0.770
+urban_population_rate                   0.260     -0.052 0.641           0.725
+voice_accountability                    0.381      0.162 0.786           0.544
+government_effectiveness                0.516      0.179 0.932           0.814
+co2_emissions_per_capita                0.247      0.033 0.569           0.596
+temperature_change_from_ghg             0.109      0.041 0.093           0.108
+                            gdp_log unemployment_rate active_population_rate
+freedom_to_choose             0.351            -0.420                  0.241
+generosity                    0.061            -0.360                  0.038
+cpi                           0.777             0.062                  0.413
+life_expectancy               0.879             0.225                  0.770
+gdp_log                       1.000             0.206                  0.732
+unemployment_rate             0.206             1.000                  0.207
+active_population_rate        0.732             0.207                  1.000
+urban_population_rate         0.810             0.188                  0.575
+voice_accountability          0.594             0.149                  0.211
+government_effectiveness      0.868             0.078                  0.572
+co2_emissions_per_capita      0.724             0.007                  0.591
+temperature_change_from_ghg   0.156            -0.085                  0.150
+                            urban_population_rate voice_accountability
+freedom_to_choose                           0.260                0.381
+generosity                                 -0.052                0.162
+cpi                                         0.641                0.786
+life_expectancy                             0.725                0.544
+gdp_log                                     0.810                0.594
+unemployment_rate                           0.188                0.149
+active_population_rate                      0.575                0.211
+urban_population_rate                       1.000                0.471
+voice_accountability                        0.471                1.000
+government_effectiveness                    0.666                0.735
+co2_emissions_per_capita                    0.590                0.231
+temperature_change_from_ghg                 0.116                0.013
+                            government_effectiveness co2_emissions_per_capita
+freedom_to_choose                              0.516                    0.247
+generosity                                     0.179                    0.033
+cpi                                            0.932                    0.569
+life_expectancy                                0.814                    0.596
+gdp_log                                        0.868                    0.724
+unemployment_rate                              0.078                    0.007
+active_population_rate                         0.572                    0.591
+urban_population_rate                          0.666                    0.590
+voice_accountability                           0.735                    0.231
+government_effectiveness                       1.000                    0.628
+co2_emissions_per_capita                       0.628                    1.000
+temperature_change_from_ghg                    0.145                    0.265
+                            temperature_change_from_ghg
+freedom_to_choose                                 0.109
+generosity                                        0.041
+cpi                                               0.093
+life_expectancy                                   0.108
+gdp_log                                           0.156
+unemployment_rate                                -0.085
+active_population_rate                            0.150
+urban_population_rate                             0.116
+voice_accountability                              0.013
+government_effectiveness                          0.145
+co2_emissions_per_capita                          0.265
+temperature_change_from_ghg                       1.000</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Comparaison avec cor(X) pour vérifier</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">cor</span>(X), <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                        gdp_per_capita social_support healthy_life_expectancy
-gdp_per_capita                   1.000          0.651                   0.831
-social_support                   0.651          1.000                   0.541
-healthy_life_expectancy          0.831          0.541                   1.000
-freedom_to_choose                0.318          0.484                   0.317
-generosity                       0.020          0.131                   0.106
-corruption_perception           -0.405         -0.273                  -0.325
-                        freedom_to_choose generosity corruption_perception
-gdp_per_capita                      0.318      0.020                -0.405
-social_support                      0.484      0.131                -0.273
-healthy_life_expectancy             0.317      0.106                -0.325
-freedom_to_choose                   1.000      0.425                -0.536
-generosity                          0.425      1.000                -0.298
-corruption_perception              -0.536     -0.298                 1.000</code></pre>
+<pre><code>                            freedom_to_choose generosity   cpi life_expectancy
+freedom_to_choose                       1.000      0.430 0.512           0.348
+generosity                              0.430      1.000 0.213           0.096
+cpi                                     0.512      0.213 1.000           0.694
+life_expectancy                         0.348      0.096 0.694           1.000
+gdp_log                                 0.351      0.061 0.777           0.879
+unemployment_rate                      -0.420     -0.360 0.062           0.225
+active_population_rate                  0.241      0.038 0.413           0.770
+urban_population_rate                   0.260     -0.052 0.641           0.725
+voice_accountability                    0.381      0.162 0.786           0.544
+government_effectiveness                0.516      0.179 0.932           0.814
+co2_emissions_per_capita                0.247      0.033 0.569           0.596
+temperature_change_from_ghg             0.109      0.041 0.093           0.108
+                            gdp_log unemployment_rate active_population_rate
+freedom_to_choose             0.351            -0.420                  0.241
+generosity                    0.061            -0.360                  0.038
+cpi                           0.777             0.062                  0.413
+life_expectancy               0.879             0.225                  0.770
+gdp_log                       1.000             0.206                  0.732
+unemployment_rate             0.206             1.000                  0.207
+active_population_rate        0.732             0.207                  1.000
+urban_population_rate         0.810             0.188                  0.575
+voice_accountability          0.594             0.149                  0.211
+government_effectiveness      0.868             0.078                  0.572
+co2_emissions_per_capita      0.724             0.007                  0.591
+temperature_change_from_ghg   0.156            -0.085                  0.150
+                            urban_population_rate voice_accountability
+freedom_to_choose                           0.260                0.381
+generosity                                 -0.052                0.162
+cpi                                         0.641                0.786
+life_expectancy                             0.725                0.544
+gdp_log                                     0.810                0.594
+unemployment_rate                           0.188                0.149
+active_population_rate                      0.575                0.211
+urban_population_rate                       1.000                0.471
+voice_accountability                        0.471                1.000
+government_effectiveness                    0.666                0.735
+co2_emissions_per_capita                    0.590                0.231
+temperature_change_from_ghg                 0.116                0.013
+                            government_effectiveness co2_emissions_per_capita
+freedom_to_choose                              0.516                    0.247
+generosity                                     0.179                    0.033
+cpi                                            0.932                    0.569
+life_expectancy                                0.814                    0.596
+gdp_log                                        0.868                    0.724
+unemployment_rate                              0.078                    0.007
+active_population_rate                         0.572                    0.591
+urban_population_rate                          0.666                    0.590
+voice_accountability                           0.735                    0.231
+government_effectiveness                       1.000                    0.628
+co2_emissions_per_capita                       0.628                    1.000
+temperature_change_from_ghg                    0.145                    0.265
+                            temperature_change_from_ghg
+freedom_to_choose                                 0.109
+generosity                                        0.041
+cpi                                               0.093
+life_expectancy                                   0.108
+gdp_log                                           0.156
+unemployment_rate                                -0.085
+active_population_rate                            0.150
+urban_population_rate                             0.116
+voice_accountability                              0.013
+government_effectiveness                          0.145
+co2_emissions_per_capita                          0.265
+temperature_change_from_ghg                       1.000</code></pre>
 </div>
 </div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="figure/correlation/matrice_correlation_2015.png" class="img-fluid figure-img" width="700"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>La matrice de corrélation met en évidence un groupe de variables fortement liées, notamment les indicateurs de développement et de qualité institutionnelle. On observe par exemple une forte association entre <code>gdp_log</code> et <code>life_expectancy</code> (0.88) ainsi qu’entre <code>cpi</code> et <code>government_effectiveness</code> (0.93). À l’inverse, <code>generosity</code> présente des corrélations globalement faibles avec les autres variables, ce qui suggère une dimension plus indépendante. Enfin, <code>co2_emissions_per_capita</code> est positivement corrélé au niveau de développement (<code>gdp_log</code> : 0.72), tandis que <code>temperature_change_from_ghg</code> est très peu lié aux autres variables (corrélations proches de 0).</p>
+<p>La matrice de corrélation résume les liens linéaires entre variables. L’ACP consiste maintenant à en extraire des axes synthétiques via une décomposition spectrale.</p>
 <ol start="3" type="1">
 <li><h5 id="décomposition-spectrale-valeurs-propres-vecteurs-propres" class="anchored">Décomposition spectrale (valeurs propres, vecteurs propres)</h5></li>
 </ol>
+<p>À partir de la matrice de corrélation, on calcule les valeurs propres et vecteurs propres afin d’identifier les directions principales de variation.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">eigen</span>(R)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -256,16 +425,17 @@ corruption_perception              -0.536     -0.298                 1.000</code
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>lambda <span class="ot">&lt;-</span> e<span class="sc">$</span>values</span>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>lambda</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.9849587 1.3188469 0.6593981 0.5803002 0.3238288 0.1326673</code></pre>
+<pre><code> [1] 5.89556977 1.86440354 1.21330698 0.83998963 0.66360973 0.47381365
+ [7] 0.35625020 0.29297339 0.15576097 0.12886037 0.07963394 0.03582784</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification : somme des lambda = p </span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(lambda)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 6</code></pre>
+<pre><code>[1] 12</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>p</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 6</code></pre>
+<pre><code>[1] 12</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Vecteurs propres</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> e<span class="sc">$</span>vectors</span>
@@ -273,13 +443,19 @@ corruption_perception              -0.536     -0.298                 1.000</code
 <span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification orthonormalité : t(V) %*% V = I</span></span>
 <span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">t</span>(V) <span class="sc">%*%</span> V, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>     [,1] [,2] [,3] [,4] [,5] [,6]
-[1,]    1    0    0    0    0    0
-[2,]    0    1    0    0    0    0
-[3,]    0    0    1    0    0    0
-[4,]    0    0    0    1    0    0
-[5,]    0    0    0    0    1    0
-[6,]    0    0    0    0    0    1</code></pre>
+<pre><code>      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12]
+ [1,]    1    0    0    0    0    0    0    0    0     0     0     0
+ [2,]    0    1    0    0    0    0    0    0    0     0     0     0
+ [3,]    0    0    1    0    0    0    0    0    0     0     0     0
+ [4,]    0    0    0    1    0    0    0    0    0     0     0     0
+ [5,]    0    0    0    0    1    0    0    0    0     0     0     0
+ [6,]    0    0    0    0    0    1    0    0    0     0     0     0
+ [7,]    0    0    0    0    0    0    1    0    0     0     0     0
+ [8,]    0    0    0    0    0    0    0    1    0     0     0     0
+ [9,]    0    0    0    0    0    0    0    0    1     0     0     0
+[10,]    0    0    0    0    0    0    0    0    0     1     0     0
+[11,]    0    0    0    0    0    0    0    0    0     0     1     0
+[12,]    0    0    0    0    0    0    0    0    0     0     0     1</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pourcentages d'inertie</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>perc <span class="ot">&lt;-</span> <span class="dv">100</span> <span class="sc">*</span> lambda <span class="sc">/</span> <span class="fu">sum</span>(lambda)</span>
@@ -292,369 +468,520 @@ corruption_perception              -0.536     -0.298                 1.000</code
 <span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">cumul =</span> perc_cum</span>
 <span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  axe    lambda pourcentage     cumul
-1   1 2.9849587   49.749311  49.74931
-2   2 1.3188469   21.980782  71.73009
-3   3 0.6593981   10.989969  82.72006
-4   4 0.5803002    9.671670  92.39173
-5   5 0.3238288    5.397147  97.78888
-6   6 0.1326673    2.211121 100.00000</code></pre>
+<pre><code>   axe     lambda pourcentage     cumul
+1    1 5.89556977  49.1297481  49.12975
+2    2 1.86440354  15.5366961  64.66644
+3    3 1.21330698  10.1108915  74.77734
+4    4 0.83998963   6.9999136  81.77725
+5    5 0.66360973   5.5300811  87.30733
+6    6 0.47381365   3.9484471  91.25578
+7    7 0.35625020   2.9687516  94.22453
+8    8 0.29297339   2.4414449  96.66597
+9    9 0.15576097   1.2980081  97.96398
+10  10 0.12886037   1.0738364  99.03782
+11  11 0.07963394   0.6636162  99.70143
+12  12 0.03582784   0.2985653 100.00000</code></pre>
 </div>
 </div>
-<p>Les valeurs propres nous montrent que :</p>
+<p>Les valeurs propres montrent que :</p>
 <ul>
-<li>la première composante (<code>Dim 1</code>) explique environ <code>49,7 %</code> de l’inertie totale,</li>
-<li>la deuxième composante (<code>Dim 2</code>) environ <code>22,0 %</code>,</li>
-<li><code>au total</code>, les deux premières composantes cumulent donc environ <code>71,7 %</code> de l’information totale.</li>
+<li>la première composante (<code>Dim 1</code>) explique <code>49.13 %</code> de l’inertie totale,</li>
+<li>la deuxième composante (<code>Dim 2</code>) explique <code>15.54 %</code>,</li>
+<li>au total, les deux premières composantes cumulent donc <code>64.67 %</code> de l’information.</li>
 </ul>
-<p>Les composantes suivantes (<code>Dim 3 à Dim 6</code>) apportent chacune moins de <code>11 %</code> d’inertie.<br>
-Il est donc possible de concentrer l’analyse graphique sur le plan factoriel (<code>Dim 1</code>, <code>Dim 2</code>), qui résume déjà l’essentiel de la variabilité entre les pays.</p>
+<p>La troisième composante (<code>Dim 3</code>) apporte <code>10.11 %</code> supplémentaires, ce qui porte le cumul à <code>74.78 %</code> sur les trois premiers axes. Les composantes suivantes (Dim 4 à Dim 12) expliquent chacune moins de 7 % d’inertie. On peut donc privilégier l’analyse graphique sur le plan (1,2), et compléter au besoin avec l’axe 3 si certains pays ou variables sont mal représentés sur les deux premières dimensions.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  lambda,</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">main =</span> <span class="st">"Éboulis des valeurs propres"</span>,</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">"Composantes"</span>,</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">"Valeur propre"</span></span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ACP_2015_files/figure-html/eboulis%20des%20valeurs%20propres-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="figure/acp/eboulis_valeurs_propres_2015.png" class="img-fluid figure-img" width="700"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Le graphique nous conforte dans le choix de nous concentrer sur le plan (1,2), puisque graphiquement on peut utiliser la règle du coude.</p>
+<p>Une droite est tracée à lambda = 1 ce qui permet d’identifier les composantes dont la valeur propre est supérieure à 1. Ici, cela conduit à retenir les 3 premiers axes (lambda 1, lambda 2, lambda 3).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="figure/acp/inertie_cumulee_2015.png" class="img-fluid figure-img" width="700"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Les deux premiers axes concentrant une part importante de l’information, on étudie maintenant le plan factoriel (1,2) côté individus.</p>
 <ol start="4" type="1">
 <li><h5 id="coordonnées-factorielles-des-individus" class="anchored">Coordonnées factorielles des individus</h5></li>
 </ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scores factoriels : F = Z V</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>F <span class="ot">&lt;-</span> Z <span class="sc">%*%</span> V</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(F) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"Dim"</span>, <span class="dv">1</span><span class="sc">:</span>p)</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(F) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(X)</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification des variances des axes = lambda</span></span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(F, <span class="dv">2</span>, var) <span class="sc">*</span> (n <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> n</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scores factoriels : F = Z V</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>F <span class="ot">&lt;-</span> Z <span class="sc">%*%</span> V</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(F) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"Dim"</span>, <span class="dv">1</span><span class="sc">:</span>p)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(F) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(X)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification des variances des axes = lambda</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(F, <span class="dv">2</span>, var) <span class="sc">*</span> (n <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> n</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>     Dim1      Dim2      Dim3      Dim4      Dim5      Dim6 
-2.9849587 1.3188469 0.6593981 0.5803002 0.3238288 0.1326673 </code></pre>
+<pre><code>      Dim1       Dim2       Dim3       Dim4       Dim5       Dim6       Dim7 
+5.89556977 1.86440354 1.21330698 0.83998963 0.66360973 0.47381365 0.35625020 
+      Dim8       Dim9      Dim10      Dim11      Dim12 
+0.29297339 0.15576097 0.12886037 0.07963394 0.03582784 </code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>lambda[<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>lambda[<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.9849587 1.3188469 0.6593981 0.5803002 0.3238288 0.1326673</code></pre>
+<pre><code>[1] 5.8955698 1.8644035 1.2133070 0.8399896 0.6636097 0.4738137</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>pc1 <span class="ot">&lt;-</span> perc[<span class="dv">1</span>]</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>pc2 <span class="ot">&lt;-</span> perc[<span class="dv">2</span>]</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(F[,<span class="dv">1</span>], F[,<span class="dv">2</span>],</span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="fu">sprintf</span>(<span class="st">"Dim 1 (%.1f%%)"</span>, pc1),</span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="fu">sprintf</span>(<span class="st">"Dim 2 (%.1f%%)"</span>, pc2),</span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Pays – plan factoriel (1,2)"</span>,</span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">cex =</span> <span class="fl">0.6</span>)</span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">v =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">3</span>)</span>
-<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(F[,<span class="dv">1</span>], F[,<span class="dv">2</span>], <span class="at">labels =</span> <span class="fu">rownames</span>(F), <span class="at">pos =</span> <span class="dv">3</span>, <span class="at">cex =</span> <span class="fl">0.6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>pc1 <span class="ot">&lt;-</span> perc[<span class="dv">1</span>]</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>pc2 <span class="ot">&lt;-</span> perc[<span class="dv">2</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ACP_2015_files/figure-html/coordonnees_individus-1.png" class="img-fluid figure-img" width="768"></p>
+<p><img src="figure/acp/plan_factoriel_pays_12_2015.png" class="img-fluid figure-img" width="700"></p>
 </figure>
 </div>
 </div>
 </div>
+<p>Avant d’interpréter les positions, on mesure la part d’inertie de chaque pays captée par les deux premières dimensions.</p>
 <ol start="5" type="1">
 <li><h5 id="qualité-de-représentation-des-pays-sur-le-plan-12" class="anchored">Qualité de représentation des pays sur le plan (1,2)</h5></li>
 </ol>
+<p>Les cos² permettent d’identifier quels pays peuvent être interprétés de façon robuste sur le plan (1,2), et lesquels nécessitent d’autres axes.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Norme au carré de chaque individu dans l'espace factoriel</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>normes_F2 <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(F<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="co"># cos2 sur le plan (1,2)</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>cos2_12 <span class="ot">&lt;-</span> (F[,<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> F[,<span class="dv">2</span>]<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> normes_F2</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="co"># pays les mieux représentés sur le plan (1,2)</span></span>
-<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>cos2_12_ord <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_12, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cos2_12_ord, <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Norme au carré de chaque individu dans l'espace factoriel</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>normes_F2 <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(F<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="co"># cos2 sur le plan (1,2)</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>cos2_12 <span class="ot">&lt;-</span> (F[,<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> F[,<span class="dv">2</span>]<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> normes_F2</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="co"># pays les mieux représentés sur le plan (1,2)</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>cos2_12_ord <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_12, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cos2_12_ord, <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>    Germany   Australia      Malawi      Canada      Guinea     Ireland 
-  0.9789728   0.9770143   0.9729055   0.9719657   0.9619505   0.9584556 
-    Belgium      Norway Netherlands     Austria 
-  0.9542180   0.9537693   0.9520630   0.9462648 </code></pre>
+<pre><code>      Guinea     Zimbabwe       Norway        Kenya      Iceland         Togo 
+   0.9620614    0.9322782    0.9250918    0.9221716    0.9196621    0.9185713 
+     Armenia       Uganda      Austria Sierra Leone 
+   0.9173129    0.9146095    0.9099665    0.9025603 </code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>indiv <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">country =</span> <span class="fu">rownames</span>(F),</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Dim1    =</span> F[, <span class="dv">1</span>],</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Dim2    =</span> F[, <span class="dv">2</span>],</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">cos2_12 =</span> cos2_12,</span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">region  =</span> df<span class="sc">$</span>region</span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>cos2_vec <span class="ot">&lt;-</span> <span class="fu">setNames</span>(indiv<span class="sc">$</span>cos2_12, indiv<span class="sc">$</span>country)</span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>cos2_ordonnes <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_vec, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(cos2_ordonnes[<span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>],</span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">las =</span> <span class="dv">2</span>,</span>
-<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">cex.names =</span> <span class="fl">0.6</span>,</span>
-<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">main =</span> <span class="st">"20 pays les mieux projetés sur le plan (1,2)"</span>,</span>
-<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">ylab =</span> <span class="st">"cos2 (Dim1, Dim2)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>indiv <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">country =</span> <span class="fu">rownames</span>(F),</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Dim1    =</span> F[, <span class="dv">1</span>],</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Dim2    =</span> F[, <span class="dv">2</span>],</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">cos2_12 =</span> cos2_12,</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">region  =</span> df<span class="sc">$</span>region</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>cos2_vec <span class="ot">&lt;-</span> <span class="fu">setNames</span>(indiv<span class="sc">$</span>cos2_12, indiv<span class="sc">$</span>country)</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>cos2_ordonnes <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_vec, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ACP_2015_files/figure-html/cos2_individus-1.png" class="img-fluid figure-img" width="768"></p>
+<p><img src="figure/acp/cos2_top20_pays_plan_12_2015.png" class="img-fluid figure-img" width="700"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Les pays les mieux représentés sur le plan (1,2) sont par exemple <code>Germany</code>, <code>Australia</code>, <code>Malawi</code>, <code>Canada</code>, <code>Guinea</code>, <code>Ireland</code>, <code>Belgium</code>, <code>Norway</code>, <code>Netherlands</code> ou encore <code>Austria</code>, avec des cos2 supérieurs à <code>0.95</code>.</p>
-<p>Pour ces pays, plus de 95 % de leur inertie est expliquée par les deux premières composantes, <code>leur position dans le plan factoriel est donc très fiable</code>.</p>
+<p>D’après les cos² sur le plan (1,2), les pays les mieux représentés sont notamment <code>Guinea</code>, <code>Zimbabwe</code>, <code>Norway</code>, <code>Kenya</code>, <code>Iceland</code>, <code>Togo</code>, <code>Armenia</code>, <code>Uganda</code>, <code>Austria</code> et <code>Sierra Leone</code>, avec des cos² supérieurs à <code>0.90</code>.</p>
+<p>Pour ces pays, plus de 90 % de leur inertie est expliquée par les deux premières composantes, donc leur position sur le plan factoriel (1,2) est particulièrement fiable.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>cos2_12_ord <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_12, <span class="at">decreasing =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cos2_12_ord, <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>cos2_12_ord <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_12, <span class="at">decreasing =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cos2_12_ord, <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  Mongolia    Vietnam    Georgia    Jamaica   Botswana       Iran Kyrgyzstan 
-0.01079305 0.02334328 0.03753166 0.06545858 0.12656992 0.17177272 0.20191633 
-  Colombia     Cyprus    Ecuador 
-0.20384025 0.20608247 0.21629886 </code></pre>
+<pre><code>           Jamaica              China Dominican Republic         Kazakhstan 
+       0.003669818        0.006433664        0.014355344        0.021515203 
+            Mexico               Peru           Colombia           Mongolia 
+       0.027175451        0.048785391        0.083879268        0.098409958 
+            Brazil               Iran 
+       0.101750759        0.110279599 </code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>cos2_pires <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_vec, <span class="at">decreasing =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(cos2_pires[<span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>],</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">las =</span> <span class="dv">2</span>,</span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">cex.names =</span> <span class="fl">0.6</span>,</span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">main =</span> <span class="st">"20 pays les moins bien projetés sur le plan (1,2)"</span>,</span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">ylab =</span> <span class="st">"cos2 (Dim1, Dim2)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ACP_2015_files/figure-html/cos2_individus_suite-1.png" class="img-fluid figure-img" width="768"></p>
-</figure>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>cos2_pires <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_vec, <span class="at">decreasing =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-</div>
-</div>
-<p>À l’inverse, certains pays sont très mal projetés sur ce plan. On trouve notamment <code>Mongolia</code>, <code>Vietnam</code>, <code>Georgia</code>, <code>Jamaica</code>, <code>Botswana</code>, <code>Iran</code>, <code>Kyrgyzstan</code>, <code>Colombia</code>, <code>Cyprus</code> ou encore <code>Ecuador</code>, avec des cos2 parfois <code>inférieurs à 0.05</code>.</p>
-<p>Cela signifie qu’une grande partie de l’information les concernant est portée par les dimensions suivantes (Dim 3, Dim 4, etc.) L’interprétation de leur position dans le plan (1,2) doit donc être faite avec prudence, car ce plan ne résume pas bien leur profil sur les variables de bien-être.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Facteur de région + palette de couleurs</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>region_fac      <span class="ot">&lt;-</span> <span class="fu">factor</span>(indiv<span class="sc">$</span>region)</span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>palette_region  <span class="ot">&lt;-</span> <span class="fu">rainbow</span>(<span class="fu">length</span>(<span class="fu">levels</span>(region_fac)))</span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>col_region      <span class="ot">&lt;-</span> palette_region[region_fac]</span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>pc1 <span class="ot">&lt;-</span> perc[<span class="dv">1</span>]</span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>pc2 <span class="ot">&lt;-</span> perc[<span class="dv">2</span>]</span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(indiv<span class="sc">$</span>Dim1, indiv<span class="sc">$</span>Dim2,</span>
-<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="fu">sprintf</span>(<span class="st">"Dim 1 (%.1f%%)"</span>, pc1),</span>
-<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="fu">sprintf</span>(<span class="st">"Dim 2 (%.1f%%)"</span>, pc2),</span>
-<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Pays – plan factoriel (1,2) coloré par région"</span>,</span>
-<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>     <span class="at">pch  =</span> <span class="dv">16</span>,</span>
-<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">cex  =</span> <span class="fl">0.7</span>,</span>
-<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">col  =</span> col_region)</span>
-<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">v =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">3</span>)</span>
-<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Labels seulement pour les pays bien représentés (cos2 &gt;= 0.7)</span></span>
-<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a>bien_repr <span class="ot">&lt;-</span> indiv<span class="sc">$</span>cos2_12 <span class="sc">&gt;=</span> <span class="fl">0.7</span></span>
-<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(indiv<span class="sc">$</span>Dim1[bien_repr],</span>
-<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>     indiv<span class="sc">$</span>Dim2[bien_repr],</span>
-<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>     <span class="at">labels =</span> indiv<span class="sc">$</span>country[bien_repr],</span>
-<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a>     <span class="at">pos =</span> <span class="dv">3</span>, <span class="at">cex =</span> <span class="fl">0.6</span>)</span>
-<span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Légende des régions</span></span>
-<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topleft"</span>,</span>
-<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">levels</span>(region_fac),</span>
-<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a>       <span class="at">col    =</span> palette_region,</span>
-<span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a>       <span class="at">pch    =</span> <span class="dv">16</span>,</span>
-<span id="cb40-31"><a href="#cb40-31" aria-hidden="true" tabindex="-1"></a>       <span class="at">bty    =</span> <span class="st">"n"</span>,</span>
-<span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a>       <span class="at">cex    =</span> <span class="fl">0.6</span>,</span>
-<span id="cb40-33"><a href="#cb40-33" aria-hidden="true" tabindex="-1"></a>       <span class="at">ncol   =</span> <span class="dv">2</span>,      </span>
-<span id="cb40-34"><a href="#cb40-34" aria-hidden="true" tabindex="-1"></a>       <span class="at">xpd    =</span> <span class="cn">TRUE</span>)  </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ACP_2015_files/figure-html/coordonnees_individus_couleur-1.png" class="img-fluid figure-img" width="768"></p>
+<p><img src="figure/acp/cos2_pires20_pays_plan_12_2015.png" class="img-fluid figure-img" width="700"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Les pays sont colorés par grande région géographique donné par le jeu de donnée. Seuls les pays bien représentés par le plan (cos2 &gt;= 0,7) sont étiquetés.</p>
+<p>À l’inverse, certains pays sont très mal représentés sur le plan (1,2). Le graphique met notamment en évidence <code>Jamaica</code>, <code>China</code>, <code>Dominican Republic</code>, <code>Kazakhstan</code> et <code>Mexico</code> parmi les cos² les plus faibles (proches de 0).</p>
+<p>Pour ces pays, la projection sur (Dim 1, Dim 2) ne résume qu’une faible part de leur inertie. Leur interprétation sur ce plan doit donc être faite avec prudence, car leur profil est davantage expliqué par des dimensions suivantes (Dim 3 à Dim 12).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="figure/acp/plan_factoriel_pays_regions_12_2015.png" class="img-fluid figure-img" width="700"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Les pays sont colorés selon leur région géographique, avec des familles de couleurs cohérentes par continent. Pour conserver une bonne lisibilité, seuls les 20 pays ayant les cos² les plus élevés sur le plan (1,2) sont étiquetés.</p>
+<p>Pour interpréter les dimensions, on examine maintenant quelles variables contribuent le plus à Dim 1 et Dim 2.</p>
 <ol start="6" type="1">
 <li><h5 id="coordonnées-factorielles-des-variables" class="anchored">Coordonnées factorielles des variables</h5></li>
 </ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Coordonnées des variables sur les axes</span></span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>var_coord <span class="ot">&lt;-</span> V <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="fu">sqrt</span>(lambda))</span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(var_coord) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(X)</span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(var_coord) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"Dim"</span>, <span class="dv">1</span><span class="sc">:</span>p)</span>
-<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(var_coord, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Coordonnées des variables sur les axes</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>var_coord <span class="ot">&lt;-</span> V <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="fu">sqrt</span>(lambda))</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(var_coord) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(X)</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(var_coord) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"Dim"</span>, <span class="dv">1</span><span class="sc">:</span>p)</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(var_coord, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                          Dim1   Dim2   Dim3   Dim4   Dim5   Dim6
-gdp_per_capita          -0.838 -0.440 -0.036  0.162 -0.028  0.275
-social_support          -0.777 -0.206  0.308 -0.397 -0.306 -0.090
-healthy_life_expectancy -0.800 -0.391  0.069  0.329  0.228 -0.205
-freedom_to_choose       -0.702  0.482 -0.006 -0.384  0.354  0.049
-generosity              -0.350  0.747  0.414  0.367 -0.110  0.030
-corruption_perception    0.651 -0.372  0.622 -0.078  0.201  0.064</code></pre>
+<pre><code>                              Dim1   Dim2   Dim3   Dim4   Dim5   Dim6   Dim7
+freedom_to_choose           -0.500  0.689 -0.005  0.066  0.133 -0.391 -0.119
+generosity                  -0.163  0.733 -0.026  0.190 -0.566  0.248  0.115
+cpi                         -0.885  0.166 -0.255 -0.181  0.084  0.133 -0.096
+life_expectancy             -0.900 -0.152  0.018  0.154 -0.126 -0.133  0.038
+gdp_log                     -0.951 -0.152  0.045  0.057  0.008  0.035  0.045
+unemployment_rate           -0.133 -0.789 -0.288 -0.133 -0.397 -0.049 -0.125
+active_population_rate      -0.719 -0.248  0.326  0.374 -0.206 -0.240 -0.081
+urban_population_rate       -0.808 -0.223  0.043  0.045  0.172  0.020  0.476
+voice_accountability        -0.691  0.133 -0.533 -0.357 -0.024 -0.012  0.022
+government_effectiveness    -0.944  0.099 -0.130 -0.095  0.038  0.028 -0.133
+co2_emissions_per_capita    -0.727 -0.093  0.420  0.104  0.187  0.391 -0.218
+temperature_change_from_ghg -0.187  0.088  0.690 -0.658 -0.191 -0.093  0.045
+                              Dim8   Dim9  Dim10  Dim11  Dim12
+freedom_to_choose            0.287  0.032 -0.053  0.008 -0.003
+generosity                   0.057  0.006  0.002  0.005  0.007
+cpi                          0.028 -0.103  0.174 -0.071 -0.107
+life_expectancy             -0.149 -0.174 -0.209 -0.102 -0.023
+gdp_log                     -0.033 -0.008 -0.049  0.237 -0.057
+unemployment_rate            0.289  0.000 -0.012 -0.001  0.007
+active_population_rate      -0.148  0.150  0.156 -0.033 -0.003
+urban_population_rate        0.176  0.027  0.049 -0.044  0.029
+voice_accountability        -0.162  0.240 -0.079 -0.026  0.011
+government_effectiveness    -0.067 -0.143  0.086  0.040  0.139
+co2_emissions_per_capita     0.125  0.110 -0.096 -0.050  0.013
+temperature_change_from_ghg -0.014 -0.013  0.004 -0.003 -0.005</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># cos2 des variables sur les deux premiers axes</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>var_cos2 <span class="ot">&lt;-</span> var_coord<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(var_cos2[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># cos2 des variables sur les deux premiers axes</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>var_cos2 <span class="ot">&lt;-</span> var_coord<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(var_cos2[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                         Dim1  Dim2
-gdp_per_capita          0.703 0.194
-social_support          0.603 0.043
-healthy_life_expectancy 0.640 0.153
-freedom_to_choose       0.493 0.232
-generosity              0.123 0.559
-corruption_perception   0.424 0.139</code></pre>
+<pre><code>                             Dim1  Dim2
+freedom_to_choose           0.250 0.475
+generosity                  0.027 0.538
+cpi                         0.783 0.027
+life_expectancy             0.810 0.023
+gdp_log                     0.905 0.023
+unemployment_rate           0.018 0.623
+active_population_rate      0.516 0.061
+urban_population_rate       0.653 0.050
+voice_accountability        0.478 0.018
+government_effectiveness    0.891 0.010
+co2_emissions_per_capita    0.529 0.009
+temperature_change_from_ghg 0.035 0.008</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Contributions des variables aux axes 1 et 2</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="co"># contrib(j,k) = coord(j,k)^2 / lambda_k</span></span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>var_contrib <span class="ot">&lt;-</span> <span class="fu">sweep</span>(var_coord<span class="sc">^</span><span class="dv">2</span>, <span class="dv">2</span>, lambda, <span class="at">FUN =</span> <span class="st">"/"</span>) <span class="sc">*</span> <span class="dv">100</span></span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(var_contrib[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Contributions des variables aux axes 1 et 2</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="co"># contrib(j,k) = coord(j,k)^2 / lambda_k</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>var_contrib <span class="ot">&lt;-</span> <span class="fu">sweep</span>(var_coord<span class="sc">^</span><span class="dv">2</span>, <span class="dv">2</span>, lambda, <span class="at">FUN =</span> <span class="st">"/"</span>) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(var_contrib[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                         Dim1  Dim2
-gdp_per_capita          23.54 14.69
-social_support          20.21  3.23
-healthy_life_expectancy 21.44 11.61
-freedom_to_choose       16.51 17.59
-generosity               4.11 42.36
-corruption_perception   14.19 10.51</code></pre>
+<pre><code>                             Dim1  Dim2
+freedom_to_choose            4.25 25.48
+generosity                   0.45 28.83
+cpi                         13.28  1.47
+life_expectancy             13.74  1.24
+gdp_log                     15.35  1.24
+unemployment_rate            0.30 33.41
+active_population_rate       8.76  3.30
+urban_population_rate       11.07  2.68
+voice_accountability         8.11  0.95
+government_effectiveness    15.12  0.52
+co2_emissions_per_capita     8.98  0.46
+temperature_change_from_ghg  0.60  0.41</code></pre>
 </div>
 </div>
-<p>Sur le plan des variables, la première composante (<code>Dim 1</code>) est fortement liée aux indicateurs suivants :</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 32%">
-<col style="width: 24%">
-<col style="width: 16%">
-<col style="width: 27%">
-</colgroup>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="dv">12</span> </span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>tab_dim1 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Variable =</span> <span class="fu">rownames</span>(var_coord),</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  Coordonnée <span class="ot">=</span> var_coord[, <span class="st">"Dim1"</span>],</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">cos2 =</span> var_cos2[, <span class="st">"Dim1"</span>],</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Contribution =</span> var_contrib[, <span class="st">"Dim1"</span>]</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>tab_dim1 <span class="ot">&lt;-</span> tab_dim1[<span class="fu">order</span>(<span class="fu">abs</span>(tab_dim1<span class="sc">$</span>Coordonnée), <span class="at">decreasing =</span> <span class="cn">TRUE</span>), ][<span class="dv">1</span><span class="sc">:</span>k, ]</span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>tab_dim1<span class="sc">$</span>Coordonnée <span class="ot">&lt;-</span> <span class="fu">round</span>(tab_dim1<span class="sc">$</span>Coordonnée, <span class="dv">3</span>)</span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>tab_dim1<span class="sc">$</span>cos2 <span class="ot">&lt;-</span> <span class="fu">round</span>(tab_dim1<span class="sc">$</span>cos2, <span class="dv">3</span>)</span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>tab_dim1<span class="sc">$</span>Contribution <span class="ot">&lt;-</span> <span class="fu">round</span>(tab_dim1<span class="sc">$</span>Contribution, <span class="dv">2</span>)</span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(tab_dim1) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(tab_dim1, <span class="at">caption =</span> <span class="st">"Variables les plus liées à Dim 1"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Variables les plus liées à Dim 1</caption>
 <thead>
 <tr class="header">
 <th style="text-align: left;">Variable</th>
-<th style="text-align: center;">Coordonnée Dim 1</th>
-<th style="text-align: center;">cos2 Dim 1</th>
-<th style="text-align: center;">Contribution Dim 1</th>
+<th style="text-align: right;">Coordonnée</th>
+<th style="text-align: right;">cos2</th>
+<th style="text-align: right;">Contribution</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;"><code>gdp_per_capita</code></td>
-<td style="text-align: center;">-0,84</td>
-<td style="text-align: center;">0,70</td>
-<td style="text-align: center;">23,5 %</td>
+<td style="text-align: left;">gdp_log</td>
+<td style="text-align: right;">-0.951</td>
+<td style="text-align: right;">0.905</td>
+<td style="text-align: right;">15.35</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><code>healthy_life_expectancy</code></td>
-<td style="text-align: center;">-0,80</td>
-<td style="text-align: center;">0,64</td>
-<td style="text-align: center;">21,4 %</td>
+<td style="text-align: left;">government_effectiveness</td>
+<td style="text-align: right;">-0.944</td>
+<td style="text-align: right;">0.891</td>
+<td style="text-align: right;">15.12</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;"><code>social_support</code></td>
-<td style="text-align: center;">-0,78</td>
-<td style="text-align: center;">0,60</td>
-<td style="text-align: center;">20,2 %</td>
+<td style="text-align: left;">life_expectancy</td>
+<td style="text-align: right;">-0.900</td>
+<td style="text-align: right;">0.810</td>
+<td style="text-align: right;">13.74</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><code>freedom_to_choose</code></td>
-<td style="text-align: center;">-0,70</td>
-<td style="text-align: center;">0,49</td>
-<td style="text-align: center;">16,5 %</td>
+<td style="text-align: left;">cpi</td>
+<td style="text-align: right;">-0.885</td>
+<td style="text-align: right;">0.783</td>
+<td style="text-align: right;">13.28</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;"><code>corruption_perception</code></td>
-<td style="text-align: center;">0,65</td>
-<td style="text-align: center;">0,42</td>
-<td style="text-align: center;">14,2 %</td>
+<td style="text-align: left;">urban_population_rate</td>
+<td style="text-align: right;">-0.808</td>
+<td style="text-align: right;">0.653</td>
+<td style="text-align: right;">11.07</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">co2_emissions_per_capita</td>
+<td style="text-align: right;">-0.727</td>
+<td style="text-align: right;">0.529</td>
+<td style="text-align: right;">8.98</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">active_population_rate</td>
+<td style="text-align: right;">-0.719</td>
+<td style="text-align: right;">0.516</td>
+<td style="text-align: right;">8.76</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">voice_accountability</td>
+<td style="text-align: right;">-0.691</td>
+<td style="text-align: right;">0.478</td>
+<td style="text-align: right;">8.11</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">freedom_to_choose</td>
+<td style="text-align: right;">-0.500</td>
+<td style="text-align: right;">0.250</td>
+<td style="text-align: right;">4.25</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">temperature_change_from_ghg</td>
+<td style="text-align: right;">-0.187</td>
+<td style="text-align: right;">0.035</td>
+<td style="text-align: right;">0.60</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">generosity</td>
+<td style="text-align: right;">-0.163</td>
+<td style="text-align: right;">0.027</td>
+<td style="text-align: right;">0.45</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">unemployment_rate</td>
+<td style="text-align: right;">-0.133</td>
+<td style="text-align: right;">0.018</td>
+<td style="text-align: right;">0.30</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>La première composante (<code>Dim 1</code>) est très fortement structurée par les variables de développement économique et institutionnel. Les contributions les plus élevées proviennent de <code>gdp_log</code> (15.35 %), <code>government_effectiveness</code> (15.12 %), <code>life_expectancy</code> (13.74 %) et <code>cpi</code> (13.28 %). Ces variables ont aussi des cos² très élevés sur <code>Dim 1</code> (par exemple gdp_log : 0.905, government_effectiveness : 0.891, life_expectancy : 0.810, cpi : 0.783), ce qui signifie qu’elles sont très bien représentées par cet axe.</p>
+<p>On observe également une contribution assez importante pour des variables comme <code>urban_population_rate</code> (11.07 %), <code>co2_emissions_per_capita</code> (8.98 %), <code>active_population_rate</code> (8.76 %) et <code>voice_accountability</code> (8.11 %). À l’inverse, <code>temperature_change_from_ghg</code>, <code>generosity</code> et <code>unemployment_rate</code> contribuent très peu à <code>Dim 1</code> (moins de 1 % chacune).</p>
+<p>En pratique, <code>Dim 1</code> peut être interprétée comme une dimension de niveau de développement et de qualité institutionnelle. Le fait que les variables aient des coordonnées de même signe (ex : gdp_log = -0.951, government_effectiveness = -0.944) montre que ces variables évoluent conjointement sur cette dimension.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>tab_dim2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Variable =</span> <span class="fu">rownames</span>(var_coord),</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  Coordonnée <span class="ot">=</span> var_coord[, <span class="st">"Dim2"</span>],</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cos2 =</span> var_cos2[, <span class="st">"Dim2"</span>],</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Contribution =</span> var_contrib[, <span class="st">"Dim2"</span>]</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>tab_dim2 <span class="ot">&lt;-</span> tab_dim2[<span class="fu">order</span>(<span class="fu">abs</span>(tab_dim2<span class="sc">$</span>Coordonnée), <span class="at">decreasing =</span> <span class="cn">TRUE</span>), ][<span class="dv">1</span><span class="sc">:</span>k, ]</span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>tab_dim2<span class="sc">$</span>Coordonnée <span class="ot">&lt;-</span> <span class="fu">round</span>(tab_dim2<span class="sc">$</span>Coordonnée, <span class="dv">3</span>)</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>tab_dim2<span class="sc">$</span>cos2 <span class="ot">&lt;-</span> <span class="fu">round</span>(tab_dim2<span class="sc">$</span>cos2, <span class="dv">3</span>)</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>tab_dim2<span class="sc">$</span>Contribution <span class="ot">&lt;-</span> <span class="fu">round</span>(tab_dim2<span class="sc">$</span>Contribution, <span class="dv">2</span>)</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(tab_dim2) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(tab_dim2, <span class="at">caption =</span> <span class="st">"Variables les plus liées à Dim 2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Variables les plus liées à Dim 2</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: right;">Coordonnée</th>
+<th style="text-align: right;">cos2</th>
+<th style="text-align: right;">Contribution</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">unemployment_rate</td>
+<td style="text-align: right;">-0.789</td>
+<td style="text-align: right;">0.623</td>
+<td style="text-align: right;">33.41</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">generosity</td>
-<td style="text-align: center;">-0,35</td>
-<td style="text-align: center;">0,12</td>
-<td style="text-align: center;">4,1 %</td>
+<td style="text-align: right;">0.733</td>
+<td style="text-align: right;">0.538</td>
+<td style="text-align: right;">28.83</td>
 </tr>
-</tbody>
-</table>
-<p>Dim 1 oppose les pays avec <code>PIB élevé, bonne espérance de vie en bonne santé, fort soutien social et grande liberté perçue</code> et les pays où les scores de <code>corruption_perception</code> sont élevés, donc où la corruption est jugée plus présente.</p>
-<p>Tandis que la deuxième composante (<code>Dim 2</code>) s’explique grâce aux indicateurs :</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 35%">
-<col style="width: 23%">
-<col style="width: 15%">
-<col style="width: 25%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Variable</th>
-<th style="text-align: center;">Coordonnée Dim 2</th>
-<th style="text-align: center;">cos2 Dim 2</th>
-<th style="text-align: center;">Contribution Dim 2</th>
-</tr>
-</thead>
-<tbody>
 <tr class="odd">
-<td style="text-align: left;"><code>generosity</code></td>
-<td style="text-align: center;">0,75</td>
-<td style="text-align: center;">0,56</td>
-<td style="text-align: center;">42,4 %</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">freedom_to_choose</td>
-<td style="text-align: center;">0,48</td>
-<td style="text-align: center;">0,23</td>
-<td style="text-align: center;">17,6 %</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">gdp_per_capita</td>
-<td style="text-align: center;">-0,44</td>
-<td style="text-align: center;">0,19</td>
-<td style="text-align: center;">14,7 %</td>
+<td style="text-align: right;">0.689</td>
+<td style="text-align: right;">0.475</td>
+<td style="text-align: right;">25.48</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">healthy_life_expectancy</td>
-<td style="text-align: center;">-0,39</td>
-<td style="text-align: center;">0,15</td>
-<td style="text-align: center;">11,6 %</td>
+<td style="text-align: left;">active_population_rate</td>
+<td style="text-align: right;">-0.248</td>
+<td style="text-align: right;">0.061</td>
+<td style="text-align: right;">3.30</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">corruption_perception</td>
-<td style="text-align: center;">-0,37</td>
-<td style="text-align: center;">0,14</td>
-<td style="text-align: center;">10,5 %</td>
+<td style="text-align: left;">urban_population_rate</td>
+<td style="text-align: right;">-0.223</td>
+<td style="text-align: right;">0.050</td>
+<td style="text-align: right;">2.68</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">social_support</td>
-<td style="text-align: center;">-0,21</td>
-<td style="text-align: center;">0,04</td>
-<td style="text-align: center;">3,2 %</td>
+<td style="text-align: left;">cpi</td>
+<td style="text-align: right;">0.166</td>
+<td style="text-align: right;">0.027</td>
+<td style="text-align: right;">1.47</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">life_expectancy</td>
+<td style="text-align: right;">-0.152</td>
+<td style="text-align: right;">0.023</td>
+<td style="text-align: right;">1.24</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">gdp_log</td>
+<td style="text-align: right;">-0.152</td>
+<td style="text-align: right;">0.023</td>
+<td style="text-align: right;">1.24</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">voice_accountability</td>
+<td style="text-align: right;">0.133</td>
+<td style="text-align: right;">0.018</td>
+<td style="text-align: right;">0.95</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">government_effectiveness</td>
+<td style="text-align: right;">0.099</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.52</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">co2_emissions_per_capita</td>
+<td style="text-align: right;">-0.093</td>
+<td style="text-align: right;">0.009</td>
+<td style="text-align: right;">0.46</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">temperature_change_from_ghg</td>
+<td style="text-align: right;">0.088</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: right;">0.41</td>
 </tr>
 </tbody>
 </table>
-<p>Dim 2 oppose les pays <code>très généreux</code> à ceux qui le sont moins. La générosité domine clairement cet axe, les autres variables jouant un rôle secondaire. On peut l’interpréter comme une <code>dimension culturelle et sociale</code> supplémentaire, qui ne se réduit pas au simple niveau de richesse.</p>
-<p>En résumé, pour l’ACP réalisée sur l’année 2015, Dim 1 résume le niveau de développement et de bien-être opposé à la corruption perçue, tandis que Dim 2 capte principalement les différences de générosité entre pays.</p>
+</div>
+</div>
+<p>La deuxième composante (<code>Dim 2</code>) est dominée par trois variables qui concentrent à elles seules l’essentiel de l’axe : <code>unemployment_rate</code> (33.41 %), <code>generosity</code> (28.83 %) et <code>freedom_to_choose</code> (25.48 %). Leurs cos² sur <code>Dim 2</code> sont également élevés (unemployment_rate : 0.623, generosity : 0.538, freedom_to_choose : 0.475), ce qui confirme que <code>Dim 2</code> est principalement portée par ces trois dimensions.</p>
+<p>Les autres variables contribuent nettement moins à <code>Dim 2</code> (moins de 4 % chacune), ce qui indique que cet axe apporte une information plus ciblée que <code>Dim 1</code>. <code>Dim 2</code> oppose des pays caractérisés par une générosité et une liberté de choix élevées (coordonnées positives pour generosity = 0.733 et freedom_to_choose = 0.689) à des pays présentant des taux de chômage plus élevés (coordonnée négative pour unemployment_rate = -0.789). Les indicateurs de développement (PIB, espérance de vie, efficacité gouvernementale, etc.) jouent un rôle secondaire sur cet axe.</p>
+<p>En résumé, pour l’ACP sur l’année 2015, <code>Dim 1</code> traduit principalement un axe de développement socio-économique et institutionnel (PIB, efficacité gouvernementale, espérance de vie, CPI, urbanisation, etc.), tandis que <code>Dim 2</code> est surtout portée par trois variables, et oppose des pays “générosité/liberté” à des pays marqués par un chômage plus élevé.</p>
 <ol start="7" type="1">
 <li><h5 id="cercle-des-corrélations-plan-12" class="anchored">Cercle des corrélations (plan 1,2)</h5></li>
 </ol>
+<p>Pour compléter l’interprétation, on représente les corrélations des variables avec les axes sous forme de cercle des corrélations.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>res_pca <span class="ot">&lt;-</span> <span class="fu">PCA</span>(X, <span class="at">scale.unit =</span> <span class="cn">TRUE</span>, <span class="at">ncp =</span> p, <span class="at">graph =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(res_pca, <span class="at">choix =</span> <span class="st">"var"</span>, <span class="at">main =</span> <span class="st">"Cercle des corrélations"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(res_pca<span class="sc">$</span>var<span class="sc">$</span>coord[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            Dim.1  Dim.2
+freedom_to_choose           0.500  0.689
+generosity                  0.163  0.733
+cpi                         0.885  0.166
+life_expectancy             0.900 -0.152
+gdp_log                     0.951 -0.152
+unemployment_rate           0.133 -0.789
+active_population_rate      0.719 -0.248
+urban_population_rate       0.808 -0.223
+voice_accountability        0.691  0.133
+government_effectiveness    0.944  0.099
+co2_emissions_per_capita    0.727 -0.093
+temperature_change_from_ghg 0.187  0.088</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(res_pca<span class="sc">$</span>var<span class="sc">$</span>cos2[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            Dim.1 Dim.2
+freedom_to_choose           0.250 0.475
+generosity                  0.027 0.538
+cpi                         0.783 0.027
+life_expectancy             0.810 0.023
+gdp_log                     0.905 0.023
+unemployment_rate           0.018 0.623
+active_population_rate      0.516 0.061
+urban_population_rate       0.653 0.050
+voice_accountability        0.478 0.018
+government_effectiveness    0.891 0.010
+co2_emissions_per_capita    0.529 0.009
+temperature_change_from_ghg 0.035 0.008</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(res_pca<span class="sc">$</span>var<span class="sc">$</span>contrib[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            Dim.1 Dim.2
+freedom_to_choose            4.25 25.48
+generosity                   0.45 28.83
+cpi                         13.28  1.47
+life_expectancy             13.74  1.24
+gdp_log                     15.35  1.24
+unemployment_rate            0.30 33.41
+active_population_rate       8.76  3.30
+urban_population_rate       11.07  2.68
+voice_accountability         8.11  0.95
+government_effectiveness    15.12  0.52
+co2_emissions_per_capita     8.98  0.46
+temperature_change_from_ghg  0.60  0.41</code></pre>
+</div>
+</div>
+<div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ACP_2015_files/figure-html/cercle_correlations-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="figure/acp/cercle_correlations_2015.png" class="img-fluid figure-img" width="700"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>Le cercle des corrélations confirme ces interprétations :</p>
 <ul>
-<li>les variables <code>gdp_per_capita</code>, <code>social_support</code>, <code>healthy_life_expectancy</code> et <code>freedom_to_choose</code> sont regroupées du même côté de Dim 1, ce qui traduit leur corrélation positive entre elles ;</li>
-<li><code>corruption_perception</code> est située à l’opposé de la direction générale, ce qui signifie que, dans ce jeu de données, les pays les plus riches et en meilleure santé sont aussi ceux où la corruption est perçue comme plus faible ;</li>
-<li><code>generosity</code> est davantage alignée sur Dim 2, ce qui confirme que cette dimension capte surtout des différences de générosité entre les pays.</li>
+<li><p><code>gdp_log</code>, <code>life_expectancy</code>, <code>cpi</code>, <code>government_effectiveness</code>, <code>voice_accountability</code>, <code>urban_population_rate</code> et <code>active_population_rate</code> pointent globalement dans la même direction sur <code>Dim 1</code>. Cela indique qu’elles sont corrélées entre elles et qu’elles structurent fortement le premier axe (dimension “développement et qualité institutionnelle”).</p></li>
+<li><p><code>generosity</code> et <code>freedom_to_choose</code> sont surtout portées par <code>Dim 2</code>, alors que <code>unemployment_rate</code> est plutôt à l’opposé sur cet axe. Cela suggère que <code>Dim 2</code> oppose des pays “générosité et liberté perçue” à des pays plus marqués par le chômage.</p></li>
+<li><p><code>temperature_change_from_ghg</code> et, dans une moindre mesure, <code>co2_emissions_per_capita</code> se distinguent du bloc socio-économique, ce qui peut traduire une dimension plus environnementale, partiellement indépendante des indicateurs de développement.</p></li>
 </ul>
-<p>La plupart des variables sont proches du cercle unité, ce qui signifie qu’elles sont <code>bien représentées</code> par les deux premiers axes et que <code>le plan (1,2)</code> restitue correctement la structure des corrélations entre les indicateurs de bien-être.</p>
-<p>Ce protocole d’ACP sera réutilisé sur les données 2024 afin d’analyser l’évolution sur la décennie.</p>
+<p>Ce protocole d’ACP sera réutilisé sur les données de 2024 afin d’analyser l’évolution sur la décennie.</p>
 
 </main>
 <!-- /main column -->
