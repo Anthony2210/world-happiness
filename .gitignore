@@ -12,6 +12,7 @@ figure/
 .DS_Store
 Thumbs.db
 .vscode/
+.vs/
 .idea/
 
 __pycache__/
