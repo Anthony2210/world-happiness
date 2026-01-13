@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>WORLD HAPPINESS</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="ACP_2023_files/libs/clipboard/clipboard.min.js"></script>
+<script src="ACP_2023_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="ACP_2023_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="ACP_2023_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="ACP_2023_files/libs/quarto-html/popper.min.js"></script>
+<script src="ACP_2023_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="ACP_2023_files/libs/quarto-html/anchor.min.js"></script>
+<link href="ACP_2023_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="ACP_2023_files/libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="ACP_2023_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="ACP_2023_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="ACP_2023_files/libs/bootstrap/bootstrap-9e3ffae467580fdb927a41352e75a2e0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><strong>WORLD HAPPINESS</strong></h1>
+<p class="subtitle lead"><strong>Analyse en Composantes Principales sur l’année 2023</strong></p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<ol type="1">
+<li><h5 id="chargement-des-données-et-sélection-des-variables" class="anchored">Chargement des données et sélection des variables</h5></li>
+</ol>
+<p>Le fichier nettoyé dans Le notebook <code>nettoyage_des_données.ipynb</code>, <code>world_happiness_2023_clean.csv</code>, est utilisé dans Le cadre de cette seconde ACP.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">".."</span>,<span class="st">"data"</span>, <span class="st">"clean"</span>, <span class="st">"world_happiness_2023_clean.csv"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(data, <span class="at">header =</span> <span class="cn">TRUE</span>, <span class="at">sep =</span> <span class="st">";"</span>, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "rank"                        "country"                    
+ [3] "happiness_score"             "freedom_to_choose"          
+ [5] "generosity"                  "year"                       
+ [7] "region"                      "cpi"                        
+ [9] "life_expectancy"             "gdp_log"                    
+[11] "unemployment_rate"           "active_population_rate"     
+[13] "urban_population_rate"       "voice_accountability"       
+[15] "government_effectiveness"    "co2_emissions_per_capita"   
+[17] "temperature_change_from_ghg"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>no_var <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rank"</span>, <span class="st">"country"</span>, <span class="st">"region"</span>, <span class="st">"happiness_score"</span>, <span class="st">"year"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pays <span class="ot">&lt;-</span> df<span class="sc">$</span>country</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Certaines colonnes ne doivent pas être utilisées dans l’ACP car ce sont des identifiants ou des informations qualitatives :</p>
+<ul>
+<li><code>rank</code></li>
+<li><code>country</code></li>
+<li><code>region</code></li>
+<li><code>happiness_score</code></li>
+<li><code>year</code></li>
+</ul>
+<p>Voici les variables quantitatives restantes :</p>
+<ul>
+<li><code>freedom_to_choose</code></li>
+<li><code>generosity</code></li>
+<li><code>cpi</code></li>
+<li><code>life_expectancy</code></li>
+<li><code>gdp_log</code></li>
+<li><code>unemployment_rate</code></li>
+<li><code>active_population_rate</code></li>
+<li><code>urban_population_rate</code></li>
+<li><code>voice_accountability</code></li>
+<li><code>government_effectiveness</code></li>
+<li><code>co2_emissions_per_capita</code></li>
+<li><code>temperature_change_from_ghg</code></li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> df[, <span class="sc">!</span>(<span class="fu">names</span>(df) <span class="sc">%in%</span> no_var)]</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">lapply</span>(X, <span class="cf">function</span>(x) <span class="fu">as.numeric</span>(<span class="fu">as.character</span>(x))))</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(X) <span class="ot">&lt;-</span> pays</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(X)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> freedom_to_choose   generosity          cpi        life_expectancy
+ Min.   :0.0000    Min.   :0.0000   Min.   :17.00   Min.   :54.46  
+ 1st Qu.:0.6050    1st Qu.:0.2300   1st Qu.:32.00   1st Qu.:70.35  
+ Median :0.7254    Median :0.3230   Median :41.00   Median :76.19  
+ Mean   :0.7101    Mean   :0.3467   Mean   :45.72   Mean   :74.67  
+ 3rd Qu.:0.8551    3rd Qu.:0.4684   3rd Qu.:59.00   3rd Qu.:81.17  
+ Max.   :1.0000    Max.   :1.0000   Max.   :90.00   Max.   :85.51  
+    gdp_log       unemployment_rate active_population_rate
+ Min.   : 7.388   Min.   : 0.225    Min.   :50.46         
+ 1st Qu.: 8.967   1st Qu.: 3.076    1st Qu.:61.49         
+ Median : 9.894   Median : 4.899    Median :64.45         
+ Mean   : 9.792   Mean   : 6.139    Mean   :63.73         
+ 3rd Qu.:10.740   3rd Qu.: 7.611    3rd Qu.:66.60         
+ Max.   :11.776   Max.   :32.098    Max.   :81.97         
+ urban_population_rate voice_accountability government_effectiveness
+ Min.   : 16.97        Min.   :-1.85290     Min.   :-1.98701        
+ 1st Qu.: 52.16        1st Qu.:-0.69585     1st Qu.:-0.63948        
+ Median : 65.70        Median : 0.06048     Median : 0.04711        
+ Mean   : 64.15        Mean   : 0.07144     Mean   : 0.13685        
+ 3rd Qu.: 80.13        3rd Qu.: 0.91365     3rd Qu.: 0.79644        
+ Max.   :100.00        Max.   : 1.77725     Max.   : 2.31747        
+ co2_emissions_per_capita temperature_change_from_ghg
+ Min.   : 0.08778         Min.   :5.731e-05          
+ 1st Qu.: 1.08890         1st Qu.:1.105e-03          
+ Median : 3.44640         Median :2.787e-03          
+ Mean   : 4.24972         Mean   :1.242e-02          
+ 3rd Qu.: 5.67719         3rd Qu.:8.649e-03          
+ Max.   :24.71003         Max.   :2.876e-01          </code></pre>
+</div>
+</div>
+<p>Après avoir isolé les variables quantitatives utiles pour l’ACP, on prépare les données pour rendre les variables comparables entre elles. Les variables n’étant pas sur les mêmes échelles, la prochaine étape consistera à standardiser les données avant de calculer la matrice de corrélation.</p>
+<ol start="2" type="1">
+<li><h5 id="standardisation-des-données-et-matrice-de-corrélation" class="anchored">Standardisation des données et matrice de corrélation</h5></li>
+</ol>
+<p>Afin de faire une ACP normée, on a besoin d’une matrice de données Z</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>X_mat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(X)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>moy <span class="ot">&lt;-</span> <span class="fu">apply</span>(X_mat, <span class="dv">2</span>, mean)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>moy</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          freedom_to_choose                  generosity 
+                 0.71005472                  0.34670960 
+                        cpi             life_expectancy 
+                45.72000000                 74.66972560 
+                    gdp_log           unemployment_rate 
+                 9.79175241                  6.13851200 
+     active_population_rate       urban_population_rate 
+                63.73140323                 64.15078330 
+       voice_accountability    government_effectiveness 
+                 0.07143756                  0.13684635 
+   co2_emissions_per_capita temperature_change_from_ghg 
+                 4.24971965                  0.01241719 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>ecartype <span class="ot">&lt;-</span> <span class="fu">apply</span>(X_mat, <span class="dv">2</span>, sd) <span class="sc">*</span> <span class="fu">sqrt</span>((n <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> n)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>ecartype</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          freedom_to_choose                  generosity 
+                 0.18832339                  0.17700078 
+                        cpi             life_expectancy 
+                18.70640532                  7.11092589 
+                    gdp_log           unemployment_rate 
+                 1.10382870                  4.65124936 
+     active_population_rate       urban_population_rate 
+                 5.25475302                 20.84675689 
+       voice_accountability    government_effectiveness 
+                 0.95305476                  0.94762747 
+   co2_emissions_per_capita temperature_change_from_ghg 
+                 4.33930502                  0.03490223 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Standardisation : Z = (X - moy) / ecartype</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>Z <span class="ot">&lt;-</span> <span class="fu">scale</span>(X_mat, <span class="at">center =</span> moy, <span class="at">scale =</span> ecartype)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification moyenne et variance</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(Z, <span class="dv">2</span>, mean)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          freedom_to_choose                  generosity 
+              -1.301736e-16               -5.330111e-17 
+                        cpi             life_expectancy 
+               7.073682e-17               -9.716646e-16 
+                    gdp_log           unemployment_rate 
+              -3.844373e-16               -9.127248e-17 
+     active_population_rate       urban_population_rate 
+               5.445531e-16                1.266244e-16 
+       voice_accountability    government_effectiveness 
+              -2.088607e-18                2.317591e-17 
+   co2_emissions_per_capita temperature_change_from_ghg 
+              -7.405968e-17               -2.143424e-17 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(Z, <span class="dv">2</span>, var) <span class="sc">*</span> (n <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> n</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          freedom_to_choose                  generosity 
+                          1                           1 
+                        cpi             life_expectancy 
+                          1                           1 
+                    gdp_log           unemployment_rate 
+                          1                           1 
+     active_population_rate       urban_population_rate 
+                          1                           1 
+       voice_accountability    government_effectiveness 
+                          1                           1 
+   co2_emissions_per_capita temperature_change_from_ghg 
+                          1                           1 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Matrice des poids (1/n)</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="fu">rep</span>(<span class="dv">1</span> <span class="sc">/</span> n, n))</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Matrice de corrélation R = Z' N Z</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>R <span class="ot">&lt;-</span> <span class="fu">t</span>(Z) <span class="sc">%*%</span> N <span class="sc">%*%</span> Z</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(R, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            freedom_to_choose generosity    cpi life_expectancy
+freedom_to_choose                       1.000      0.203  0.441           0.409
+generosity                              0.203      1.000  0.004          -0.142
+cpi                                     0.441      0.004  1.000           0.701
+life_expectancy                         0.409     -0.142  0.701           1.000
+gdp_log                                 0.437     -0.117  0.768           0.880
+unemployment_rate                      -0.354     -0.370 -0.063           0.033
+active_population_rate                  0.406     -0.046  0.313           0.657
+urban_population_rate                   0.231     -0.168  0.593           0.703
+voice_accountability                    0.382     -0.041  0.802           0.595
+government_effectiveness                0.570     -0.006  0.929           0.752
+co2_emissions_per_capita                0.277      0.080  0.456           0.554
+temperature_change_from_ghg             0.070      0.094  0.069           0.096
+                            gdp_log unemployment_rate active_population_rate
+freedom_to_choose             0.437            -0.354                  0.406
+generosity                   -0.117            -0.370                 -0.046
+cpi                           0.768            -0.063                  0.313
+life_expectancy               0.880             0.033                  0.657
+gdp_log                       1.000             0.011                  0.641
+unemployment_rate             0.011             1.000                  0.038
+active_population_rate        0.641             0.038                  1.000
+urban_population_rate         0.764             0.135                  0.532
+voice_accountability          0.643             0.007                  0.196
+government_effectiveness      0.825            -0.148                  0.467
+co2_emissions_per_capita      0.662            -0.085                  0.556
+temperature_change_from_ghg   0.153            -0.096                  0.135
+                            urban_population_rate voice_accountability
+freedom_to_choose                           0.231                0.382
+generosity                                 -0.168               -0.041
+cpi                                         0.593                0.802
+life_expectancy                             0.703                0.595
+gdp_log                                     0.764                0.643
+unemployment_rate                           0.135                0.007
+active_population_rate                      0.532                0.196
+urban_population_rate                       1.000                0.494
+voice_accountability                        0.494                1.000
+government_effectiveness                    0.605                0.734
+co2_emissions_per_capita                    0.544                0.185
+temperature_change_from_ghg                 0.111               -0.017
+                            government_effectiveness co2_emissions_per_capita
+freedom_to_choose                              0.570                    0.277
+generosity                                    -0.006                    0.080
+cpi                                            0.929                    0.456
+life_expectancy                                0.752                    0.554
+gdp_log                                        0.825                    0.662
+unemployment_rate                             -0.148                   -0.085
+active_population_rate                         0.467                    0.556
+urban_population_rate                          0.605                    0.544
+voice_accountability                           0.734                    0.185
+government_effectiveness                       1.000                    0.536
+co2_emissions_per_capita                       0.536                    1.000
+temperature_change_from_ghg                    0.121                    0.286
+                            temperature_change_from_ghg
+freedom_to_choose                                 0.070
+generosity                                        0.094
+cpi                                               0.069
+life_expectancy                                   0.096
+gdp_log                                           0.153
+unemployment_rate                                -0.096
+active_population_rate                            0.135
+urban_population_rate                             0.111
+voice_accountability                             -0.017
+government_effectiveness                          0.121
+co2_emissions_per_capita                          0.286
+temperature_change_from_ghg                       1.000</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Comparaison avec cor(X) pour vérifier</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">cor</span>(X), <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            freedom_to_choose generosity    cpi life_expectancy
+freedom_to_choose                       1.000      0.203  0.441           0.409
+generosity                              0.203      1.000  0.004          -0.142
+cpi                                     0.441      0.004  1.000           0.701
+life_expectancy                         0.409     -0.142  0.701           1.000
+gdp_log                                 0.437     -0.117  0.768           0.880
+unemployment_rate                      -0.354     -0.370 -0.063           0.033
+active_population_rate                  0.406     -0.046  0.313           0.657
+urban_population_rate                   0.231     -0.168  0.593           0.703
+voice_accountability                    0.382     -0.041  0.802           0.595
+government_effectiveness                0.570     -0.006  0.929           0.752
+co2_emissions_per_capita                0.277      0.080  0.456           0.554
+temperature_change_from_ghg             0.070      0.094  0.069           0.096
+                            gdp_log unemployment_rate active_population_rate
+freedom_to_choose             0.437            -0.354                  0.406
+generosity                   -0.117            -0.370                 -0.046
+cpi                           0.768            -0.063                  0.313
+life_expectancy               0.880             0.033                  0.657
+gdp_log                       1.000             0.011                  0.641
+unemployment_rate             0.011             1.000                  0.038
+active_population_rate        0.641             0.038                  1.000
+urban_population_rate         0.764             0.135                  0.532
+voice_accountability          0.643             0.007                  0.196
+government_effectiveness      0.825            -0.148                  0.467
+co2_emissions_per_capita      0.662            -0.085                  0.556
+temperature_change_from_ghg   0.153            -0.096                  0.135
+                            urban_population_rate voice_accountability
+freedom_to_choose                           0.231                0.382
+generosity                                 -0.168               -0.041
+cpi                                         0.593                0.802
+life_expectancy                             0.703                0.595
+gdp_log                                     0.764                0.643
+unemployment_rate                           0.135                0.007
+active_population_rate                      0.532                0.196
+urban_population_rate                       1.000                0.494
+voice_accountability                        0.494                1.000
+government_effectiveness                    0.605                0.734
+co2_emissions_per_capita                    0.544                0.185
+temperature_change_from_ghg                 0.111               -0.017
+                            government_effectiveness co2_emissions_per_capita
+freedom_to_choose                              0.570                    0.277
+generosity                                    -0.006                    0.080
+cpi                                            0.929                    0.456
+life_expectancy                                0.752                    0.554
+gdp_log                                        0.825                    0.662
+unemployment_rate                             -0.148                   -0.085
+active_population_rate                         0.467                    0.556
+urban_population_rate                          0.605                    0.544
+voice_accountability                           0.734                    0.185
+government_effectiveness                       1.000                    0.536
+co2_emissions_per_capita                       0.536                    1.000
+temperature_change_from_ghg                    0.121                    0.286
+                            temperature_change_from_ghg
+freedom_to_choose                                 0.070
+generosity                                        0.094
+cpi                                               0.069
+life_expectancy                                   0.096
+gdp_log                                           0.153
+unemployment_rate                                -0.096
+active_population_rate                            0.135
+urban_population_rate                             0.111
+voice_accountability                             -0.017
+government_effectiveness                          0.121
+co2_emissions_per_capita                          0.286
+temperature_change_from_ghg                       1.000</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="figure/correlation/matrice_correlation_2023.png" class="img-fluid figure-img" width="700"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>La matrice de corrélation en 2023 met de nouveau en évidence un bloc de variables très liées entre elles, correspondant au niveau de développement et à la qualité institutionnelle. On observe notamment une forte association entre <code>gdp_log</code> et <code>life_expectancy</code> (0.88), ainsi qu’entre <code>cpi</code> et <code>government_effectiveness</code> (0.93). Les variables institutionnelles restent elles aussi fortement connectées, par exemple <code>voice_accountability</code> avec <code>cpi</code> (0.80) et avec <code>government_effectiveness</code> (0.73).</p>
+<p>Par rapport à 2015, <code>generosity</code> apparaît encore plus indépendante du reste. Ses corrélations sont très faibles ou légèrement négatives avec plusieurs indicateurs de développement, par exemple avec <code>cpi</code> (0.00), <code>life_expectancy</code> (-0.14) et <code>gdp_log</code> (-0.12), alors qu’en 2015 elle était faiblement mais positivement corrélée à la plupart de ces variables. Le chômage reste globalement opposé aux variables “sociales” sur certains liens, avec une corrélation négative entre <code>unemployment_rate</code> et <code>freedom_to_choose</code> (-0.35), et aussi avec <code>generosity</code> (-0.37), proche de 2015 sur l’ordre de grandeur.</p>
+<p>Enfin, <code>co2_emissions_per_capita</code> reste positivement associé au niveau de développement (<code>gdp_log</code> : 0.66), mais ce lien est un peu moins fort qu’en 2015 (0.72). Comme en 2015, <code>temperature_change_from_ghg</code> est très peu lié aux autres variables (corrélations proches de 0), même si on note une corrélation modérée avec <code>co2_emissions_per_capita</code> (0.29).</p>
+<ol start="3" type="1">
+<li><h5 id="décomposition-spectrale-valeurs-propres-vecteurs-propres" class="anchored">Décomposition spectrale (valeurs propres, vecteurs propres)</h5></li>
+</ol>
+<p>À partir de la matrice de corrélation, on calcule les valeurs propres et vecteurs propres afin d’identifier les directions principales de variation.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">eigen</span>(R)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Valeurs propres</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>lambda <span class="ot">&lt;-</span> e<span class="sc">$</span>values</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>lambda</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] 5.66003470 1.68522248 1.31491196 0.87913720 0.68158427 0.57063442
+ [7] 0.38593617 0.31579059 0.19139593 0.18386108 0.08935610 0.04213511</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification : somme des lambda = p </span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(lambda)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 12</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>p</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 12</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Vecteurs propres</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> e<span class="sc">$</span>vectors</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification orthonormalité : t(V) %*% V = I</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">t</span>(V) <span class="sc">%*%</span> V, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12]
+ [1,]    1    0    0    0    0    0    0    0    0     0     0     0
+ [2,]    0    1    0    0    0    0    0    0    0     0     0     0
+ [3,]    0    0    1    0    0    0    0    0    0     0     0     0
+ [4,]    0    0    0    1    0    0    0    0    0     0     0     0
+ [5,]    0    0    0    0    1    0    0    0    0     0     0     0
+ [6,]    0    0    0    0    0    1    0    0    0     0     0     0
+ [7,]    0    0    0    0    0    0    1    0    0     0     0     0
+ [8,]    0    0    0    0    0    0    0    1    0     0     0     0
+ [9,]    0    0    0    0    0    0    0    0    1     0     0     0
+[10,]    0    0    0    0    0    0    0    0    0     1     0     0
+[11,]    0    0    0    0    0    0    0    0    0     0     1     0
+[12,]    0    0    0    0    0    0    0    0    0     0     0     1</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pourcentages d'inertie</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>perc <span class="ot">&lt;-</span> <span class="dv">100</span> <span class="sc">*</span> lambda <span class="sc">/</span> <span class="fu">sum</span>(lambda)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>perc_cum <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(perc)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">axe =</span> <span class="dv">1</span><span class="sc">:</span>p,</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda =</span> lambda,</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">pourcentage =</span> perc,</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">cumul =</span> perc_cum</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   axe     lambda pourcentage     cumul
+1    1 5.66003470  47.1669558  47.16696
+2    2 1.68522248  14.0435207  61.21048
+3    3 1.31491196  10.9575997  72.16808
+4    4 0.87913720   7.3261433  79.49422
+5    5 0.68158427   5.6798689  85.17409
+6    6 0.57063442   4.7552869  89.92938
+7    7 0.38593617   3.2161348  93.14551
+8    8 0.31579059   2.6315883  95.77710
+9    9 0.19139593   1.5949661  97.37206
+10  10 0.18386108   1.5321756  98.90424
+11  11 0.08935610   0.7446342  99.64887
+12  12 0.04213511   0.3511259 100.00000</code></pre>
+</div>
+</div>
+<p>Les valeurs propres montrent que :</p>
+<ul>
+<li>la première composante (<code>Dim 1</code>) explique <code>47.17 %</code> de l’inertie totale,</li>
+<li>la deuxième composante (<code>Dim 2</code>) explique <code>14.04 %</code>,</li>
+<li>au total, les deux premières composantes cumulent donc <code>61.21 %</code> de l’information.</li>
+</ul>
+<p>La troisième composante (<code>Dim 3</code>) apporte <code>10.96 %</code> supplémentaires, ce qui porte Le cumul à <code>72.17 %</code> sur les trois premiers axes. Comme en 2015, Le critère de Kaiser conduit à retenir 3 composantes principales. On remarque cependant une légère baisse de l’inertie captée par Le plan (1,2) entre 2015 (<code>64.67 %</code>) et 2023 (<code>61.21 %</code>). Le plan (1,2) reste pertinent pour une lecture globale, mais l’axe 3 peut être un peu plus utile en 2023 pour compléter certaines interprétations.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="figure/acp/eboulis_valeurs_propres_2023.png" class="img-fluid figure-img" width="700"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Une droite est tracée à lambda = 1 ce qui permet d’identifier les composantes dont la valeur propre est supérieure à 1. Ici, cela conduit à retenir les 3 premiers axes (lambda 1, lambda 2, lambda 3).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="figure/acp/inertie_cumulee_2023.png" class="img-fluid figure-img" width="700"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Les deux premiers axes concentrant une part importante de l’information, on étudie maintenant Le plan factoriel (1,2) côté individus.</p>
+<ol start="4" type="1">
+<li><h5 id="coordonnées-factorielles-des-individus" class="anchored">Coordonnées factorielles des individus</h5></li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scores factoriels : F = Z V</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>F <span class="ot">&lt;-</span> Z <span class="sc">%*%</span> V</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(F) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"Dim"</span>, <span class="dv">1</span><span class="sc">:</span>p)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(F) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(X)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Vérification des variances des axes = lambda</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(F, <span class="dv">2</span>, var) <span class="sc">*</span> (n <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> n</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      Dim1       Dim2       Dim3       Dim4       Dim5       Dim6       Dim7 
+5.66003470 1.68522248 1.31491196 0.87913720 0.68158427 0.57063442 0.38593617 
+      Dim8       Dim9      Dim10      Dim11      Dim12 
+0.31579059 0.19139593 0.18386108 0.08935610 0.04213511 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>lambda[<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 5.6600347 1.6852225 1.3149120 0.8791372 0.6815843 0.5706344</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>pc1 <span class="ot">&lt;-</span> perc[<span class="dv">1</span>]</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>pc2 <span class="ot">&lt;-</span> perc[<span class="dv">2</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="figure/acp/plan_factoriel_pays_12_2023.png" class="img-fluid figure-img" width="700"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Avant d’interpréter les positions, on mesure la part d’inertie de chaque pays captée par les deux premières dimensions.</p>
+<ol start="5" type="1">
+<li><h5 id="qualité-de-représentation-des-pays-sur-le-plan-12" class="anchored">Qualité de représentation des pays sur Le plan (1,2)</h5></li>
+</ol>
+<p>Les cos² permettent d’identifier quels pays peuvent être interprétés de façon robuste sur Le plan (1,2), et lesquels nécessitent d’autres axes.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Norme au carré de chaque individu dans l'espace factoriel</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>normes_F2 <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(F<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="co"># cos2 sur Le plan (1,2)</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>cos2_12 <span class="ot">&lt;-</span> (F[,<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> F[,<span class="dv">2</span>]<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> normes_F2</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="co"># pays les mieux représentés sur Le plan (1,2)</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>cos2_12_ord <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_12, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cos2_12_ord, <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Luxembourg   Zimbabwe   Pakistan       Chad     Guinea    Tunisia    Iceland 
+ 0.9500246  0.9453183  0.9446478  0.9332144  0.9297639  0.9184314  0.8847498 
+    Uganda      Spain   Cameroon 
+ 0.8815411  0.8813724  0.8793124 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>indiv <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">country =</span> <span class="fu">rownames</span>(F),</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Dim1    =</span> F[, <span class="dv">1</span>],</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Dim2    =</span> F[, <span class="dv">2</span>],</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">cos2_12 =</span> cos2_12,</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">region  =</span> df<span class="sc">$</span>region</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>cos2_vec <span class="ot">&lt;-</span> <span class="fu">setNames</span>(indiv<span class="sc">$</span>cos2_12, indiv<span class="sc">$</span>country)</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>cos2_ordonnes <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_vec, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="figure/acp/cos2_top20_pays_plan_12_2023.png" class="img-fluid figure-img" width="700"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>D’après les cos² sur Le plan (1,2), les pays les mieux représentés sont notamment <code>Luxembourg</code>, <code>Zimbabwe</code>, <code>Pakistan</code>, <code>Chad</code>, <code>Guinea</code>, <code>Tunisia</code>, <code>Iceland</code> et <code>Uganda</code>, avec des cos² supérieurs à <code>0.90</code>.</p>
+<p>Pour ces pays, plus de 90 % de leur inertie est expliquée par les deux premières composantes, donc leur position sur Le plan factoriel (1,2) est particulièrement fiable.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>cos2_12_ord <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_12, <span class="at">decreasing =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cos2_12_ord, <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     Russia      Mexico     Jamaica El Salvador    Mongolia      Brazil 
+0.006723593 0.009328015 0.022420111 0.033176610 0.040972883 0.044301451 
+ Kazakhstan       China   Mauritius     Ecuador 
+0.056652876 0.073879024 0.094067400 0.095589079 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>cos2_pires <span class="ot">&lt;-</span> <span class="fu">sort</span>(cos2_vec, <span class="at">decreasing =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="figure/acp/cos2_pires20_pays_plan_12_2023.png" class="img-fluid figure-img" width="700"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>À l’inverse, certains pays sont très mal représentés sur Le plan (1,2). Le graphique met notamment en évidence <code>Russia</code>, <code>Mexico</code>, <code>Jamaica</code>, <code>El Salvador</code> et <code>Mongolia</code> parmi les cos² les plus faibles (proches de 0).</p>
+<p>Pour ces pays, la projection sur (Dim 1, Dim 2) ne résume qu’une faible part de leur inertie. Leur interprétation sur ce plan doit donc être faite avec prudence, car leur profil est davantage expliqué par des dimensions suivantes (Dim 3 à Dim 12).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="figure/acp/plan_factoriel_pays_regions_12_2023.png" class="img-fluid figure-img" width="700"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Les pays sont colorés selon leur région géographique, avec des familles de couleurs cohérentes par continent. Pour conserver une bonne lisibilité, seuls les 20 pays ayant les cos² les plus élevés sur Le plan (1,2) sont étiquetés.</p>
+<p>Pour interpréter les dimensions, on examine maintenant quelles variables contribuent Le plus à Dim 1 et Dim 2.</p>
+<ol start="6" type="1">
+<li><h5 id="coordonnées-factorielles-des-variables" class="anchored">Coordonnées factorielles des variables</h5></li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Coordonnées des variables sur les axes</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>var_coord <span class="ot">&lt;-</span> V <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="fu">sqrt</span>(lambda))</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(var_coord) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(X)</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(var_coord) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"Dim"</span>, <span class="dv">1</span><span class="sc">:</span>p)</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(var_coord, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                              Dim1   Dim2   Dim3   Dim4   Dim5   Dim6   Dim7
+freedom_to_choose           -0.562  0.507 -0.129  0.286 -0.329  0.352 -0.168
+generosity                   0.048  0.757  0.041 -0.007  0.606  0.206  0.106
+cpi                         -0.864  0.041 -0.343 -0.221  0.084 -0.051 -0.128
+life_expectancy             -0.894 -0.152  0.048  0.102 -0.021 -0.002  0.147
+gdp_log                     -0.948 -0.110  0.066  0.013  0.018 -0.056  0.028
+unemployment_rate            0.058 -0.811  0.056 -0.081  0.268  0.463 -0.197
+active_population_rate      -0.661 -0.063  0.457  0.437 -0.057  0.207  0.154
+urban_population_rate       -0.782 -0.287  0.135 -0.006  0.141 -0.134  0.274
+voice_accountability        -0.721 -0.040 -0.538 -0.244  0.035  0.112  0.117
+government_effectiveness    -0.918  0.116 -0.211 -0.097 -0.042 -0.028 -0.139
+co2_emissions_per_capita    -0.674  0.089  0.508  0.030  0.207 -0.270 -0.363
+temperature_change_from_ghg -0.171  0.227  0.591 -0.686 -0.240  0.191  0.073
+                              Dim8   Dim9  Dim10  Dim11  Dim12
+freedom_to_choose            0.246  0.083 -0.009 -0.010  0.017
+generosity                  -0.013  0.028  0.038  0.015 -0.009
+cpi                         -0.055 -0.125  0.139 -0.050  0.136
+life_expectancy             -0.182  0.284  0.114 -0.124 -0.014
+gdp_log                     -0.047  0.114 -0.013  0.254  0.030
+unemployment_rate            0.044  0.025  0.030  0.003 -0.010
+active_population_rate      -0.192 -0.221 -0.059 -0.017  0.020
+urban_population_rate        0.412 -0.058  0.038 -0.031 -0.009
+voice_accountability        -0.055 -0.006 -0.311 -0.036 -0.020
+government_effectiveness    -0.064 -0.141  0.150  0.022 -0.145
+co2_emissions_per_capita     0.034  0.039 -0.158 -0.058 -0.005
+temperature_change_from_ghg -0.009  0.000  0.009 -0.006  0.003</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># cos2 des variables sur les deux premiers axes</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>var_cos2 <span class="ot">&lt;-</span> var_coord<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(var_cos2[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                             Dim1  Dim2
+freedom_to_choose           0.316 0.257
+generosity                  0.002 0.573
+cpi                         0.747 0.002
+life_expectancy             0.800 0.023
+gdp_log                     0.898 0.012
+unemployment_rate           0.003 0.658
+active_population_rate      0.436 0.004
+urban_population_rate       0.611 0.082
+voice_accountability        0.520 0.002
+government_effectiveness    0.843 0.013
+co2_emissions_per_capita    0.454 0.008
+temperature_change_from_ghg 0.029 0.051</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Contributions des variables aux axes 1 et 2</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="co"># contrib(j,k) = coord(j,k)^2 / lambda_k</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>var_contrib <span class="ot">&lt;-</span> <span class="fu">sweep</span>(var_coord<span class="sc">^</span><span class="dv">2</span>, <span class="dv">2</span>, lambda, <span class="at">FUN =</span> <span class="st">"/"</span>) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(var_contrib[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                             Dim1  Dim2
+freedom_to_choose            5.58 15.26
+generosity                   0.04 33.98
+cpi                         13.19  0.10
+life_expectancy             14.13  1.37
+gdp_log                     15.86  0.72
+unemployment_rate            0.06 39.05
+active_population_rate       7.71  0.24
+urban_population_rate       10.80  4.88
+voice_accountability         9.19  0.10
+government_effectiveness    14.89  0.80
+co2_emissions_per_capita     8.02  0.47
+temperature_change_from_ghg  0.52  3.05</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="dv">12</span> </span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>tab_dim1 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Variable =</span> <span class="fu">rownames</span>(var_coord),</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  Coordonnée <span class="ot">=</span> var_coord[, <span class="st">"Dim1"</span>],</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">cos2 =</span> var_cos2[, <span class="st">"Dim1"</span>],</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Contribution =</span> var_contrib[, <span class="st">"Dim1"</span>]</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>tab_dim1 <span class="ot">&lt;-</span> tab_dim1[<span class="fu">order</span>(<span class="fu">abs</span>(tab_dim1<span class="sc">$</span>Coordonnée), <span class="at">decreasing =</span> <span class="cn">TRUE</span>), ][<span class="dv">1</span><span class="sc">:</span>k, ]</span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>tab_dim1<span class="sc">$</span>Coordonnée <span class="ot">&lt;-</span> <span class="fu">round</span>(tab_dim1<span class="sc">$</span>Coordonnée, <span class="dv">3</span>)</span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>tab_dim1<span class="sc">$</span>cos2 <span class="ot">&lt;-</span> <span class="fu">round</span>(tab_dim1<span class="sc">$</span>cos2, <span class="dv">3</span>)</span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>tab_dim1<span class="sc">$</span>Contribution <span class="ot">&lt;-</span> <span class="fu">round</span>(tab_dim1<span class="sc">$</span>Contribution, <span class="dv">2</span>)</span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(tab_dim1) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(tab_dim1, <span class="at">caption =</span> <span class="st">"Variables les plus liées à Dim 1"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Variables les plus liées à Dim 1</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: right;">Coordonnée</th>
+<th style="text-align: right;">cos2</th>
+<th style="text-align: right;">Contribution</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">gdp_log</td>
+<td style="text-align: right;">-0.948</td>
+<td style="text-align: right;">0.898</td>
+<td style="text-align: right;">15.86</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">government_effectiveness</td>
+<td style="text-align: right;">-0.918</td>
+<td style="text-align: right;">0.843</td>
+<td style="text-align: right;">14.89</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">life_expectancy</td>
+<td style="text-align: right;">-0.894</td>
+<td style="text-align: right;">0.800</td>
+<td style="text-align: right;">14.13</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">cpi</td>
+<td style="text-align: right;">-0.864</td>
+<td style="text-align: right;">0.747</td>
+<td style="text-align: right;">13.19</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">urban_population_rate</td>
+<td style="text-align: right;">-0.782</td>
+<td style="text-align: right;">0.611</td>
+<td style="text-align: right;">10.80</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">voice_accountability</td>
+<td style="text-align: right;">-0.721</td>
+<td style="text-align: right;">0.520</td>
+<td style="text-align: right;">9.19</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">co2_emissions_per_capita</td>
+<td style="text-align: right;">-0.674</td>
+<td style="text-align: right;">0.454</td>
+<td style="text-align: right;">8.02</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">active_population_rate</td>
+<td style="text-align: right;">-0.661</td>
+<td style="text-align: right;">0.436</td>
+<td style="text-align: right;">7.71</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">freedom_to_choose</td>
+<td style="text-align: right;">-0.562</td>
+<td style="text-align: right;">0.316</td>
+<td style="text-align: right;">5.58</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">temperature_change_from_ghg</td>
+<td style="text-align: right;">-0.171</td>
+<td style="text-align: right;">0.029</td>
+<td style="text-align: right;">0.52</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">unemployment_rate</td>
+<td style="text-align: right;">0.058</td>
+<td style="text-align: right;">0.003</td>
+<td style="text-align: right;">0.06</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">generosity</td>
+<td style="text-align: right;">0.048</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.04</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>La première composante (<code>Dim 1</code>) est à nouveau très fortement structurée par les variables de développement économique et institutionnel. Les contributions les plus élevées proviennent de <code>gdp_log</code> (15.86 %), <code>government_effectiveness</code> (14.89 %), <code>life_expectancy</code> (14.13 %) et <code>cpi</code> (13.19 %). Ces variables ont aussi des cos² très élevés sur <code>Dim 1</code> (par exemple gdp_log : 0.898, government_effectiveness : 0.843, life_expectancy : 0.8, cpi : 0.747), ce qui signifie qu’elles sont très bien représentées par cet axe.</p>
+<p>On observe encore une contribution assez importante pour des variables comme <code>urban_population_rate</code> (10.8 %), <code>voice_accountability</code> (9.19 %), <code>co2_emissions_per_capita</code> (8.02 %) et <code>active_population_rate</code> (7.71 %). À l’inverse, <code>temperature_change_from_ghg</code>, <code>unemployment_rate</code> et <code>generosity</code> contribuent très peu à <code>Dim 1</code> (moins de 1 % chacune).</p>
+<p>En pratique, <code>Dim 1</code> peut être interprétée comme une dimension de niveau de développement et de qualité institutionnelle. Le fait que les variables aient des coordonnées de même signe (ex : gdp_log = -0.948, government_effectiveness = -0.918) montre que ces variables évoluent conjointement sur cette dimension.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>tab_dim2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Variable =</span> <span class="fu">rownames</span>(var_coord),</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  Coordonnée <span class="ot">=</span> var_coord[, <span class="st">"Dim2"</span>],</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cos2 =</span> var_cos2[, <span class="st">"Dim2"</span>],</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Contribution =</span> var_contrib[, <span class="st">"Dim2"</span>]</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>tab_dim2 <span class="ot">&lt;-</span> tab_dim2[<span class="fu">order</span>(<span class="fu">abs</span>(tab_dim2<span class="sc">$</span>Coordonnée), <span class="at">decreasing =</span> <span class="cn">TRUE</span>), ][<span class="dv">1</span><span class="sc">:</span>k, ]</span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>tab_dim2<span class="sc">$</span>Coordonnée <span class="ot">&lt;-</span> <span class="fu">round</span>(tab_dim2<span class="sc">$</span>Coordonnée, <span class="dv">3</span>)</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>tab_dim2<span class="sc">$</span>cos2 <span class="ot">&lt;-</span> <span class="fu">round</span>(tab_dim2<span class="sc">$</span>cos2, <span class="dv">3</span>)</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>tab_dim2<span class="sc">$</span>Contribution <span class="ot">&lt;-</span> <span class="fu">round</span>(tab_dim2<span class="sc">$</span>Contribution, <span class="dv">2</span>)</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(tab_dim2) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(tab_dim2, <span class="at">caption =</span> <span class="st">"Variables les plus liées à Dim 2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Variables les plus liées à Dim 2</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: right;">Coordonnée</th>
+<th style="text-align: right;">cos2</th>
+<th style="text-align: right;">Contribution</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">unemployment_rate</td>
+<td style="text-align: right;">-0.811</td>
+<td style="text-align: right;">0.658</td>
+<td style="text-align: right;">39.05</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">generosity</td>
+<td style="text-align: right;">0.757</td>
+<td style="text-align: right;">0.573</td>
+<td style="text-align: right;">33.98</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">freedom_to_choose</td>
+<td style="text-align: right;">0.507</td>
+<td style="text-align: right;">0.257</td>
+<td style="text-align: right;">15.26</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">urban_population_rate</td>
+<td style="text-align: right;">-0.287</td>
+<td style="text-align: right;">0.082</td>
+<td style="text-align: right;">4.88</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">temperature_change_from_ghg</td>
+<td style="text-align: right;">0.227</td>
+<td style="text-align: right;">0.051</td>
+<td style="text-align: right;">3.05</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">life_expectancy</td>
+<td style="text-align: right;">-0.152</td>
+<td style="text-align: right;">0.023</td>
+<td style="text-align: right;">1.37</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">government_effectiveness</td>
+<td style="text-align: right;">0.116</td>
+<td style="text-align: right;">0.013</td>
+<td style="text-align: right;">0.80</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">gdp_log</td>
+<td style="text-align: right;">-0.110</td>
+<td style="text-align: right;">0.012</td>
+<td style="text-align: right;">0.72</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">co2_emissions_per_capita</td>
+<td style="text-align: right;">0.089</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: right;">0.47</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">active_population_rate</td>
+<td style="text-align: right;">-0.063</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.24</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">cpi</td>
+<td style="text-align: right;">0.041</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.10</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">voice_accountability</td>
+<td style="text-align: right;">-0.040</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.10</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>La deuxième composante (<code>Dim 2</code>) est dominée par trois variables qui concentrent à elles seules l’essentiel de l’axe : <code>unemployment_rate</code> (39.05 %), <code>generosity</code> (33.98 %) et <code>freedom_to_choose</code> (15.26 %). Leurs cos² sur <code>Dim 2</code> sont également élevés (unemployment_rate : 0.658 et generosity : 0.573), ce qui confirme que <code>Dim 2</code> est principalement portée par ces trois dimensions.</p>
+<p>Les autres variables contribuent nettement moins à <code>Dim 2</code> (moins de 5 % chacune), ce qui indique que cet axe apporte une information plus ciblée que <code>Dim 1</code>. On retrouve notamment <code>urban_population_rate</code> (4.88 %, cos² : 0.082) et <code>temperature_change_from_ghg</code> (3.05 %, cos² : 0.051), mais leur poids reste secondaire. Les indicateurs de développement et de qualité institutionnelle (gdp_log, life_expectancy, government_effectiveness, cpi, voice_accountability) jouent un rôle marginal sur cet axe, avec des contributions inférieures à 1.4 % et des cos² proches de 0.</p>
+<p>Dim 2 oppose des pays caractérisés par une générosité plus élevée et une plus grande liberté de choix à des pays présentant des taux de chômage plus élevés. Resultat similaire à ceux de l’année 2015.</p>
+<ol start="7" type="1">
+<li><h5 id="cercle-des-corrélations-plan-12" class="anchored">Cercle des corrélations (plan 1,2)</h5></li>
+</ol>
+<p>Pour compléter l’interprétation, on représente les corrélations des variables avec les axes sous forme de cercle des corrélations.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>res_pca <span class="ot">&lt;-</span> <span class="fu">PCA</span>(X, <span class="at">scale.unit =</span> <span class="cn">TRUE</span>, <span class="at">ncp =</span> p, <span class="at">graph =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(res_pca<span class="sc">$</span>var<span class="sc">$</span>coord[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                             Dim.1  Dim.2
+freedom_to_choose            0.562  0.507
+generosity                  -0.048  0.757
+cpi                          0.864  0.041
+life_expectancy              0.894 -0.152
+gdp_log                      0.948 -0.110
+unemployment_rate           -0.058 -0.811
+active_population_rate       0.661 -0.063
+urban_population_rate        0.782 -0.287
+voice_accountability         0.721 -0.040
+government_effectiveness     0.918  0.116
+co2_emissions_per_capita     0.674  0.089
+temperature_change_from_ghg  0.171  0.227</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(res_pca<span class="sc">$</span>var<span class="sc">$</span>cos2[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            Dim.1 Dim.2
+freedom_to_choose           0.316 0.257
+generosity                  0.002 0.573
+cpi                         0.747 0.002
+life_expectancy             0.800 0.023
+gdp_log                     0.898 0.012
+unemployment_rate           0.003 0.658
+active_population_rate      0.436 0.004
+urban_population_rate       0.611 0.082
+voice_accountability        0.520 0.002
+government_effectiveness    0.843 0.013
+co2_emissions_per_capita    0.454 0.008
+temperature_change_from_ghg 0.029 0.051</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(res_pca<span class="sc">$</span>var<span class="sc">$</span>contrib[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            Dim.1 Dim.2
+freedom_to_choose            5.58 15.26
+generosity                   0.04 33.98
+cpi                         13.19  0.10
+life_expectancy             14.13  1.37
+gdp_log                     15.86  0.72
+unemployment_rate            0.06 39.05
+active_population_rate       7.71  0.24
+urban_population_rate       10.80  4.88
+voice_accountability         9.19  0.10
+government_effectiveness    14.89  0.80
+co2_emissions_per_capita     8.02  0.47
+temperature_change_from_ghg  0.52  3.05</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="figure/acp/cercle_correlations_2023.png" class="img-fluid figure-img" width="700"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Le cercle des corrélations est semblable à celui de 2015 :</p>
+<ul>
+<li>Dim 1 correspond à un axe de développement socio-économique et qualité institutionnelle (PIB, espérance de vie, CPI, efficacité gouvernementale, etc.),</li>
+<li>Dim 2 reste une opposition entre chômage d’un côté et générosité / liberté de choix de l’autre,</li>
+</ul>
+<p>Le plan (1,2) est a une part d’inertie similaire en 2023 (61.21 %) et en 2015 (64.67 %).</p>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -10,152 +10,279 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE
 )
-library(FactoMineR)
-library(factoextra)
+
 library(car)        
 library(MASS)     
 library(leaps) 
 library(broom)
 library(ggplot2)
-
+library(knitr)
+library(rsample)
+library(dplyr)
+library(purrr)
+library(glmnet)
 ```
 
 1. ##### Chargement des données et sélection des variables
 
 Le fichier nettoyé dans le notebook `nettoyage_des_données.ipynb`, `world_happiness_2015_clean.csv`, est utilisé dans le cadre de cette première régression linéaire.
 
-```{r data-2015}
-data15 <- "../data/clean/world_happiness_2015_clean.csv"
-df15 <- read.csv(data15, header = TRUE, sep = ";", dec = ",", stringsAsFactors = FALSE)
+```{r data_2015}
+data15 <- file.path("..", "data", "clean", "world_happiness_2015_clean.csv")
+df15 <- read.csv(data15, header = TRUE, sep = ";", stringsAsFactors = FALSE)
 
 # Variable réponse : happiness_score
 # Variables explicatives : les mêmes que pour l’ACP
-mod_2015 <- lm(happiness_score ~ gdp_per_capita + social_support +
-                 healthy_life_expectancy + freedom_to_choose +
-                 generosity + corruption_perception,
-               data = df15)
 
+vars_x <- c(
+  "gdp_log",
+  "life_expectancy",
+  "freedom_to_choose",
+  "generosity",
+  "cpi",
+  "unemployment_rate",
+  "active_population_rate",
+  "urban_population_rate",
+  "voice_accountability",
+  "government_effectiveness",
+  "co2_emissions_per_capita",
+  "temperature_change_from_ghg"
+)
+
+form <- as.formula(paste("happiness_score ~", paste(vars_x, collapse = " + ")))
+mod_2015 <- lm(form, data = df15)
 summary(mod_2015)
 ```
 
-En 2015, le modèle explique environ `78 %` de la variabilité du score de bonheur (R² = 0,78, R² ajusté = 0,77). Le test global de Fisher est très significatif, ce qui confirme que le modèle linéaire a une bonne qualité d’ajustement.
+En 2015, le modèle a un R² de 0,7713 et un R² ajusté de 0,7468. Le test global est très significatif (p-value < 2.2e-16), ce qui indique que l’ensemble des variables explicatives contribue à expliquer `happiness_score`.
 
-Les variables suivantes ont un effet positif et significatif sur le score de bonheur :
+Au seuil de 5%, les variables significatives sont `gdp_log` (effet positif), `life_expectancy` (effet positif), `freedom_to_choose` (effet positif) et `unemployment_rate` (effet négatif). Dans cette régression 2015, `generosity` et `cpi` ne sont pas significatives, et plusieurs variables institutionnelles et environnementales ne sont pas significatives non plus selon les p-values affichées.
 
-- `gdp_per_capita` : à niveau de vie plus élevé, le score de bonheur augmente en moyenne,
-- `social_support` : c’est l’un des `effets les plus forts du modèle`, un bon soutien social est associé à un niveau de bonheur nettement plus élevé,
-- `healthy_life_expectancy` : une espérance de vie en bonne santé plus longue est aussi liée à un score de bonheur plus élevé,
-- `freedom_to_choose` : le fait de se sentir libre de faire ses choix de vie a également un effet positif significatif.
+```{r table_coef_2015, echo=FALSE, results="asis"}
+coef_2015 <- broom::tidy(mod_2015)
 
-La variable `generosity` n’est pas significative dans ce modèle. À profil comparable sur les autres variables explicatives, la générosité ne permet pas d’expliquer des différences supplémentaires de bonheur en 2015.
+coef_2015 <- coef_2015[order(coef_2015$p.value), ]
+rownames(coef_2015) <- NULL
 
-Enfin, `corruption_perception` a un `effet négatif significatif`: les pays où les citoyens déclarent davantage percevoir de corruption ont, à caractéristiques comparables, un score de bonheur plus faible. Cela est cohérent avec l’idée qu’un contexte institutionnel perçu comme corrompu est associé à un bien-être subjectif plus bas.
-
-Pour comparer, on répète ce modèle pour le fichier `world_happiness_2024_clean.csv`.
-```{r data-2024}
-data24 <- "../data/clean/world_happiness_2024_clean.csv"
-df24 <- read.csv(data24, header = TRUE, sep = ";", dec = ",", stringsAsFactors = FALSE)
-
-mod_2024 <- lm(happiness_score ~ gdp_per_capita + social_support +
-                 healthy_life_expectancy + freedom_to_choose +
-                 generosity + corruption_perception,
-               data = df24)
-
-summary(mod_2024)
+knitr::kable(
+  coef_2015,
+  digits = 4,
+  caption = "Modèle 2015. Coefficients triés par p-value."
+)
 ```
 
-En 2024, le modèle explique environ `82 %` de la variabilité du score de bonheur (R² = 0,82, R² ajusté = 0,81), soit légèrement plus qu’en 2015. Le test global de Fisher reste très significatif.
+Le tableau montre l’ordre de significativité en 2015. Les plus petites p-values concernent `gdp_log`, `freedom_to_choose`, `life_expectancy`, puis `unemployment_rate`. Les variables comme `co2_emissions_per_capita` et `cpi` ont des p-values élevées dans ce modèle.
 
-On retrouve des effets positifs pour :
+```{r pred-2015, echo=FALSE, message=FALSE, warning=FALSE}
+pred15 <- predict(mod_2015, newdata = df15)
+tmp15 <- data.frame(obs = df15$happiness_score, pred = pred15)
 
-- `gdp_per_capita` : à niveau de vie plus élevé, et à caractéristiques comparables sur les autres variables, le score de bonheur augmente en moyenne,
-- `social_support` : son coefficient est encore plus élevé qu’en 2015, ce qui confirme le rôle central du soutien social dans l’explication du bonheur,
-- `healthy_life_expectancy` : l’effet reste positif mais devient moins nettement significatif,
-- `freedom_to_choose` : son effet est encore plus marqué qu’en 2015, la liberté perçue devient un déterminant majeur du score de bonheur.
+p <- ggplot(tmp15, aes(x = pred, y = obs)) +
+  geom_point(alpha = 0.7) +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(title = "Observé vs prédit - 2015", x = "Score prédit", y = "Score observé")
 
-La variable `generosity` est à nouveau non significative en 2024, ce qui confirme que, une fois contrôlés le niveau de vie, la santé, le soutien social et la liberté perçue, la générosité n’apporte pas d’information supplémentaire pour expliquer le bonheur.
+fig_dir <- file.path("figure", "regression")
+if (!dir.exists(fig_dir)) dir.create(fig_dir, recursive = TRUE)
 
-Le point le plus remarquable est le `changement de signe` de `corruption_perception` entre 2015 et 2024. En 2024, le coefficient est `positif et significatif` : à caractéristiques comparables, les pays où la corruption est davantage perçue comme présente ont des scores de bonheur plus élevés. Ce résultat est contre-intuitif et doit être interprété avec prudence. Il peut s’expliquer par des phénomènes de colinéarité entre les variables explicatives (par exemple le fait que les pays riches et très libres déclarent davantage percevoir la corruption), ou par une évolution réelle de la relation entre bien-être et confiance dans les institutions.
+path <- file.path(fig_dir, "obs_vs_pred_2015.png")
+png(path, width = 1600, height = 1100, res = 160)
+print(p)
+invisible(dev.off())
+knitr::include_graphics(path)
+```
 
-En résumé, `entre 2015 et 2024`, le pouvoir explicatif du modèle augmente légèrement (R² passe d’environ 0,78 à 0,82) et le rôle des variables reste globalement stable : le soutien social et la liberté de choix sont des déterminants majeurs du bonheur. La principale rupture concerne la relation avec `corruption_perception`, qui change de signe entre les deux années.
+Pour comparer, on répète ce modèle pour le fichier `world_happiness_2023_clean.csv`.
 
+```{r data_2023}
+data23 <- file.path("..", "data", "clean", "world_happiness_2023_clean.csv")
+df23 <- read.csv(data23, header = TRUE, sep = ";", stringsAsFactors = FALSE)
 
+form <- as.formula(paste("happiness_score ~", paste(vars_x, collapse = " + ")))
+mod_2023 <- lm(form, data = df23)
+summary(mod_2023)
+```
+
+```{r table_coef_2023, echo=FALSE, results="asis"}
+coef_2023 <- broom::tidy(mod_2023)
+
+coef_2023 <- coef_2023[order(coef_2023$p.value), ]
+rownames(coef_2023) <- NULL
+
+knitr::kable(
+  coef_2023,
+  digits = 4,
+  caption = "Modèle 2023. Coefficients triés par p-value."
+)
+```
+
+```{r pred-2023, echo=FALSE, message=FALSE, warning=FALSE}
+pred23 <- predict(mod_2023, newdata = df23)
+tmp23 <- data.frame(obs = df23$happiness_score, pred = pred23)
+
+p <- ggplot(tmp23, aes(x = pred, y = obs)) +
+  geom_point(alpha = 0.7) +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(title = "Observé vs prédit - 2023", x = "Score prédit", y = "Score observé")
+
+path <- file.path(fig_dir, "obs_vs_pred_2023.png")
+png(path, width = 1600, height = 1100, res = 160)
+print(p)
+invisible(dev.off())
+knitr::include_graphics(path)
+```
+
+En 2023, le modèle explique environ 81 % de la variabilité du score de bonheur (R² = 0,8101, R² ajusté = 0,7898), soit légèrement plus qu’en 2015. Le test global de Fisher reste très significatif (p-value < 2.2e-16), ce qui confirme que l’ensemble des variables apporte une information utile pour expliquer `happiness_score`.
+
+Au seuil de 5 %, les variables significatives en 2023 sont :
+
+- `freedom_to_choose` : effet positif et très marqué, c’est la variable la plus significative du modèle (p-value ≈ 7.42e-09),
+
+- `gdp_log` : effet positif et significatif (p-value ≈ 2.72e-06),
+
+- `voice_accountability` : effet positif et significatif (p-value ≈ 0.0102),
+
+- `active_population_rate` : effet négatif et significatif (p-value ≈ 0.0467).
+
+`unemployment_rate` est faiblement significative au seuil de 10 % (p-value ≈ 0.0627) et garde un effet négatif, mais elle n’est pas significative au seuil de 5 %.
+
+À l’inverse, `life_expectancy`, `generosity`, `cpi`, `government_effectiveness` et les variables environnementales (`co2_emissions_per_capita`, `temperature_change_from_ghg`) ne sont pas significatives dans ce modèle 2023 selon les p-values affichées.
+
+En résumé, entre 2015 et 2023, le pouvoir explicatif du modèle augmente légèrement (R² passe d’environ 0,77 à 0,81). Les effets robustes et stables concernent surtout `gdp_log` et `freedom_to_choose` (positifs). En 2023, des variables institutionnelles et démographiques comme `voice_accountability` (positif) et `active_population_rate` (négatif) ressortent, tandis que `cpi` change de signe par rapport à 2015 mais reste non significative, donc ce point ne doit pas être interprété comme un résultat solide à ce stade.
 
 2. ##### Validation des modèles linéaires (graphes de résidus)
 
-- Pour le modèle 2025 : 
-```{r diagnostic-2015-1}
+À cette étape, on vérifie visuellement les hypothèses du modèle linéaire (linéarité, normalité des résidus, variance constante, et présence éventuelle de points influents)
+
+- Pour le modèle 2015 : 
+
+***Résidus / valeurs ajustées***
+
+Le nuage est globalement centré autour de 0. La courbe rouge montre une légère forme en U très faible, ce qui suggère une non-linéarité légère mais limitée. On observe quelques résidus atypiques, étiquetés comme 14, 109 et 60, sans structure dominante.
+
+```{r diagnostic-2015-1, echo=FALSE, message=FALSE, warning=FALSE}
 # Résidus / valeurs ajustées
+path <- file.path(fig_dir, "diag_residus_vs_ajustes_2015.png")
+png(path, width = 1400, height = 1000, res = 160)
 plot(mod_2015, which = 1)
+invisible(dev.off())
+
+knitr::include_graphics(path)
 ```
 
-Le graphique Résidus / valeurs ajustées montre un nuage centré autour de 0, sans structure très marquée. On observe bien une légère courbure mais la relation linéaire reste acceptable.
+***QQ-plot***
 
-```{r diagnostic-2015-2}
+Les points suivent bien la droite au centre, mais on voit des écarts dans les extrémités, surtout dans la queue gauche (ex. 60, 109) et dans la queue droite (ex. 140). La normalité est donc globalement raisonnable, avec des queues un peu plus “lourdes” que la normale.
+
+```{r diagnostic-2015-2, echo=FALSE, message=FALSE, warning=FALSE}
 # QQ-plot des résidus 
+path <- file.path(fig_dir, "diag_qqplot_2015.png")
+png(path, width = 1400, height = 1000, res = 160)
 plot(mod_2015, which = 2)
+invisible(dev.off())
+
+knitr::include_graphics(path)
 ```
 
-Le QQ-plot des résidus est assez proche de la droite théorique, avec quelques écarts aux extrémités (pour quelques pays extrêmes). L’hypothèse de normalité des résidus est donc raisonnablement vérifiée.
+***Scale-Location***
 
-```{r diagnostic-2015-3}
+La dispersion des résidus standardisés est assez stable sur l’ensemble des valeurs ajustées. La courbe rouge est légèrement bombée au milieu, mais l’hétéroscédasticité semble faible à modérée, et ne remet pas en cause l’usage du modèle.
+
+```{r diagnostic-2015-3, echo=FALSE, message=FALSE, warning=FALSE}
 # Scale-Location
+path <- file.path(fig_dir, "diag_scale_location_2015.png")
+png(path, width = 1400, height = 1000, res = 160)
 plot(mod_2015, which = 3)
+invisible(dev.off())
+
+knitr::include_graphics(path)
 ```
 
-Le graphique Scale–Location ne met pas en évidence d’hétéroscédasticité forte : la dispersion des résidus standardisés reste d’ordre comparable pour les valeurs ajustées faibles et élevées. La variance peut être considérée comme constante.
+***Résidus standardisés / leverage***
 
-```{r diagnostic-2015-4}
+La majorité des points ont un leverage faible. Un point à leverage très élevé est visible (à droite), ce qui peut indiquer un pays particulièrement atypique sur les variables explicatives. Les distances de Cook ne semblent pas franchir de seuil critique, mais ces observations méritent d’être surveillées car elles peuvent influencer certains coefficients.
+
+```{r diagnostic-2015-4, echo=FALSE, message=FALSE, warning=FALSE}
 # Résidus standardisés / leverage
+path <- file.path(fig_dir, "diag_residus_vs_leverage_2015.png")
+png(path, width = 1400, height = 1000, res = 160)
 plot(mod_2015, which = 5)
+invisible(dev.off())
+
+knitr::include_graphics(path)
 ```
 
-Enfin, le graphe Résidus standardisés / leverage montre quelques observations avec un leverage un peu plus élevé que les autres, mais aucune n’a une distance de Cook très importante. Certains pays sont potentiellement influents, mais ils ne remettent pas en cause le modèle.
 
+- Pour le modèle 2023 :
 
-- Pour le modèle 2024 :
-```{r diagnostic-2024-1}
+***Résidus / valeurs ajustées***
+
+Le nuage reste globalement centré autour de 0, mais la courbe rouge montre une tendance légèrement décroissante quand les valeurs ajustées augmentent. Cela indique un biais léger selon le niveau de bonheur, donc une non-linéarité plus marquée qu’en 2015.
+
+```{r diagnostic-2023-1, echo=FALSE, message=FALSE, warning=FALSE}
 # Résidus / valeurs ajustées
-plot(mod_2024, which = 1)
+path <- file.path(fig_dir, "diag_residus_vs_ajustes_2023.png")
+png(path, width = 1400, height = 1000, res = 160)
+plot(mod_2023, which = 1)
+invisible(dev.off())
+
+knitr::include_graphics(path)
 ```
 
-Pour 2024, le graphique Résidus / valeurs ajustées présente un motif un peu plus marqué. Les résidus ont tendance à être positifs pour les scores de bonheur faibles puis plutôt négatifs pour les scores élevés. Cela suggère qu’une simple relation linéaire ne capture pas parfaitement la structure des données.
+***QQ-plot***
 
-```{r diagnostic-2024-2}
+L’écart à la droite est plus visible qu’en 2015, surtout dans la queue gauche avec quelques points très extrêmes (ex. 124, 121, 116). La normalité des résidus est donc moins bien respectée en 2023, principalement à cause de ces observations atypiques.
+
+```{r diagnostic-2023-2, echo=FALSE, message=FALSE, warning=FALSE}
 # QQ-plot des résidus 
-plot(mod_2024, which = 2)
+path <- file.path(fig_dir, "diag_qqplot_2023.png")
+png(path, width = 1400, height = 1000, res = 160)
+plot(mod_2023, which = 2)
+invisible(dev.off())
+
+knitr::include_graphics(path)
 ```
 
-Le QQ-plot des résidus est assez proche de la droite théorique, avec quelques écarts aux extrémités (pour quelques pays extrêmes). L’hypothèse de normalité des résidus est donc raisonnablement vérifiée.
+***Scale-Location***
 
-```{r diagnostic-2024-3}
+La courbe rouge décroît globalement, ce qui suggère une variance des résidus un peu plus forte pour les valeurs ajustées faibles, puis plus faible pour les valeurs ajustées élevées. On est sur une hétéroscédasticité modérée.
+
+```{r diagnostic-2023-3, echo=FALSE, message=FALSE, warning=FALSE}
 # Scale-Location
-plot(mod_2024, which = 3)
+path <- file.path(fig_dir, "diag_scale_location_2023.png")
+png(path, width = 1400, height = 1000, res = 160)
+plot(mod_2023, which = 3)
+invisible(dev.off())
+
+knitr::include_graphics(path)
 ```
 
-Le graphique Scale–Location indique une variabilité légèrement plus forte des résidus pour certains niveaux de bonheur, ce qui pointe vers une hétéroscédasticité modérée.
+***Résidus standardisés / leverage***
 
-```{r diagnostic-2024-4}
+Quelques points combinent résidus importants et leverage non négligeable (ex. 124, 121), ce qui les rend potentiellement influents. Là encore, rien n’indique une invalidité totale du modèle, mais ces pays peuvent peser sur l’estimation de certains paramètres.
+
+```{r diagnostic-2023-4, echo=FALSE, message=FALSE, warning=FALSE}
 # Résidus standardisés / leverage
-plot(mod_2024, which = 5)
+path <- file.path(fig_dir, "diag_residus_vs_leverage_2023.png")
+png(path, width = 1400, height = 1000, res = 160)
+plot(mod_2023, which = 5)
+invisible(dev.off())
+
+knitr::include_graphics(path)
 ```
 
-Le graphe Résidus standardisés / leverage met en évidence un petit nombre de pays avec un leverage relativement élevé.
+En résumé, le modèle linéaire est globalement satisfaisant en 2015. En 2023, les diagnostics suggèrent davantage de non-linéarité, une normalité des résidus moins bonne à cause de quelques pays extrêmes, et une hétéroscédasticité modérée. Le modèle est exploitable, mais l’interprétation des coefficients doit être faite avec plus de prudence, en particulier à cause des observations potentiellement influentes.
 
-En résumé, le modèle linéaire explique bien le score de bonheur en 2015 et 2024, mais les diagnostics graphiques suggèrent qu’en 2024 la relation est un peu moins bien captée : légère non-linéarité et hétéroscédasticité modérée. Le modèle reste exploitable, mais les résultats doivent être interprétés avec plus de prudence.
-
-2. ##### Choix de modèle linéaire pour 2015 et 2024
+3. ##### Choix de modèle linéaire pour 2015 et 2023
 
 On réduit d’abord le modèle en retirant la variable `generosity`, qui n’était pas significative dans le modèle complet.
 
-```{r choix-modèle-2015}
-mod_2015_red <- lm(happiness_score ~ gdp_per_capita +
-                     social_support +
-                     healthy_life_expectancy +
-                     freedom_to_choose +
-                     corruption_perception,
-                   data = df15)
+```{r choix-modele-2015}
+# - generosity
+vars_x_red <- setdiff(vars_x, "generosity")
+form_red <- as.formula(paste("happiness_score ~", paste(vars_x_red, collapse = " + ")))
 
+mod_2015_red <- lm(form_red, data = df15)
 summary(mod_2015_red)
 
 # Comparaison AIC / BIC entre modèle complet et réduit
@@ -163,106 +290,629 @@ AIC(mod_2015, mod_2015_red)
 BIC(mod_2015, mod_2015_red)
 
 # Sélection automatique par AIC (stepwise, départ du modèle complet)
-mod_2015_step <- stepAIC(mod_2015,
-                         direction = "both",
-                         trace = FALSE)
-
+mod_2015_step <- stepAIC(mod_2015, direction = "both", trace = FALSE)
 summary(mod_2015_step)
 ```
 
-En 2015, le modèle réduit conserve cinq variables explicatives toutes significatives au seuil de 5 % :
+Le modèle réduit conserve un pouvoir explicatif pratiquement identique (R² = 0,7701 et R² ajusté = 0,7477, contre 0,7713 et 0,7468 pour le modèle complet). Le test global reste très significatif (p-value < 2.2e-16).
 
-- `social_support` : la variable qui a l'effet le plus fort, un bon soutien social est associé à un score de bonheur nettement plus élevé, 
-- `freedom_to_choose` : la liberté perçue de faire ses choix de vie augmente le bonheur 
-- `corruption_perception` : le coefficient est négatif, une resentiment de corruption est associée à un niveau de bonheur plus faible, 
-- `gdp_per_capita` : un niveau de vie plus élevé augmente le score de bonheur 
-- `healthy_life_expectancy` : une espérance de vie en bonne santé plus longue est liée à un bonheur plus élevé
+Au seuil de 5 %, les variables significatives dans le modèle réduit 2015 sont :
 
-La variable `generosity` n’apporte aucune explication statistique une fois les autres variables contrôlées.
+- `gdp_log` (effet positif, p = 0,0015), 
+- `life_expectancy` (effet positif, p = 0,0021),
+- `freedom_to_choose` (effet positif, p = 0,0008), 
+- `unemployment_rate` (effet négatif, p = 0,0062)
 
-Le pouvoir explicatif du modèle reste très élevé, avec un R² proche de 0,78 et un R² ajusté proche de 0,77.
+Les critères d’information confirment l’intérêt de supprimer generosity, l'AIC passe de 232,61 (modèle complet) à 231,27 (modèle réduit) et le BIC passe de 272,20 à 268,03. Le modèle réduit est donc légèrement meilleur, tout en restant plus parcimonieux.
 
-Les critères AIC et BIC sont légèrement plus faibles pour le modèle réduit que pour le modèle complet, et la sélection automatique par AIC (stepAIC) retrouve exactement ce même modèle.
+La sélection automatique par AIC (stepAIC) retient un modèle encore plus parcimonieux à 7 variables : `gdp_log`, `life_expectancy`, `freedom_to_choose`, `unemployment_rate`, `urban_population_rate`, `voice_accountability` et `government_effectiveness`.
 
-On retient donc pour 2015, le modèle final est robuste, parcimonieux, et explique 78 % du bonheur mondial.
+Dans ce modèle, les effets les plus robustes restent `gdp_log`, `life_expectancy`, `freedom_to_choose` et `unemployment_rate`, qui sont toutes significatives au seuil de 1 % et `voice_accountability` qui devient significative au seuil de 5 %. Le R² ajusté reste du même ordre (0,7505).
 
-
-On refait le protocole pour l'année 2024, en retirant encore une fois la variable `generosity`, qui n’était pas significative dans le modèle complet.
-
-
-```{r choix-modèle-2024}
-mod_2024_red <- lm(happiness_score ~ gdp_per_capita +
-                     social_support +
-                     healthy_life_expectancy +
-                     freedom_to_choose +
-                     corruption_perception,
-                   data = df24)
-
-summary(mod_2024_red)
+```{r choix-modèle-2023}
+mod_2023_red <- lm(form_red, data = df23)
+summary(mod_2023_red)
 
 # Comparaison AIC / BIC entre modèle complet et réduit
-AIC(mod_2024, mod_2024_red)
-BIC(mod_2024, mod_2024_red)
+AIC(mod_2023, mod_2023_red)
+BIC(mod_2023, mod_2023_red)
 
 # Sélection automatique par AIC (stepwise, départ du modèle complet)
-mod_2024_step <- stepAIC(mod_2024,
-                         direction = "both",
-                         trace = FALSE)
-
-summary(mod_2024_step)
+mod_2023_step <- stepAIC(mod_2023, direction = "both", trace = FALSE)
+summary(mod_2023_step)
 ```
 
-3. ##### Vérification de la colinéarité, VIF
+En 2023, le modèle réduit conserve un excellent pouvoir explicatif (R² = 0,8079, R² ajusté = 0,7892), très proche du modèle complet (R² = 0,8101, R² ajusté = 0,7898). Le test global reste très significatif (p-value < 2.2e-16).
 
-```{r vif}
+Au seuil de 5 %, les variables significatives dans le modèle réduit 2023 sont :
+
+- `gdp_log` (effet positif, p = 4,15e-06)
+- `freedom_to_choose` (effet positif, p = 1,87e-09)
+- `unemployment_rate` (effet négatif, p = 0,0239)
+- `voice_accountability` (effet positif, p = 0,0083)
+- `active_population_rate` est proche du seuil de 5 % (p = 0,0588), donc significative au seuil de 10 %.
+
+Les critères AIC/BIC confirment que retirer `generosity` améliore légèrement le modèle :
+AIC passe de 207,04 (complet) à 206,49 (réduit) et BIC passe de 246,64 à 243,26. Le modèle réduit est donc préférable au modèle complet du point de vue parcimonie vs ajustement.
+
+La sélection automatique par AIC (stepAIC) retient un modèle à les mêmes 7 variables : `gdp_log`, `freedom_to_choose`, `unemployment_rate`, `active_population_rate`, `urban_population_rate`, `voice_accountability`, `government_effectiveness`. Le pouvoir explicatif reste très proche (R² ajusté = 0,7943). 
+
+Dans ce modèle, les variables significatives au seuil de 5 % sont `gdp_log`, `freedom_to_choose`, `unemployment_rate` et `voice_accountability`. `active_population_rate` et `government_effectiveness` deviennent discutables au seuil de 10 %.
+
+Au final, pour 2015 comme pour 2023, la suppression de `generosity` est justifiée car elle ne dégrade pas la qualité d’ajustement et améliore légèrement AIC/BIC. Les modèles stepAIC proposent ensuite des versions plus parcimonieuses, avec des R² ajustés très proches. Dans les deux années, les déterminants les plus robustes sont `gdp_log` et `freedom_to_choose` (effets positifs) et `unemployment_rate` (effet négatif), avec en plus un rôle institutionnel `voice_accountability` (effet positif), surtout visible en 2023.
+
+4. ##### Vérification de la colinéarité, VIF
+
+```{r vif 2015}
 vif(mod_2015_red)
-vif(mod_2024_red)
 ```
 
-Aucun VIF ne dépasse 5, il n'y a pas de colinéarité importante. Cependant, les variables `gdp_per_capita` et `healthy_life_expectancy` sont proches de 4, ce qui confirmerait une corrélation structurelle importante entre richesse, santé et développement humain.
+En 2015, plusieurs VIF dépassent nettement 10 :
+- `government_effectiveness` : 16,64
+- `cpi` : 11,87
+- `gdp_log` : 11,61
 
-On observe qu'en 2024, la colinéarité est légèrement plus forte qu’en 2015, notamment pour les varibles `social_support` et `healthy_life_expectancy`.
+De plus, `life_expectancy` est également élevé (VIF = 6,32), ce qui indique une colinéarité non négligeable.
 
+Cela suggère une forte redondance entre les variables de niveau de développement et de qualité institutionnelle (richesse, santé, efficacité gouvernementale, perception de la corruption). Dans ce contexte, il est normal que certaines variables deviennent non significatives individuellement malgré un modèle global très bon, car elles partagent une partie de la même information.
 
-4. ##### Comparaison des coefficients 2015 et 2024
+```{r cor-2015, echo=FALSE, message=FALSE, warning=FALSE}
+X <- df15[, vars_x_red]
+C <- cor(X, use = "complete.obs")
 
-```{r coef}
-coef15 <- tidy(mod_2015_red)
-coef24 <- tidy(mod_2024_red)
+C_long <- as.data.frame(as.table(C))
+colnames(C_long) <- c("Var1","Var2","corr")
 
-coef15$year <- 2015
-coef24$year <- 2024
-coef_all <- rbind(coef15, coef24)
+p <- ggplot(C_long, aes(Var1, Var2, fill = corr)) +
+  geom_tile() +
+  coord_equal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Corrélations entre variables explicatives - 2015", x = "", y = "")
 
-ggplot(coef_all[coef_all$term != "(Intercept)", ],
-       aes(x = term, y = estimate, fill = as.factor(year))) +
+path <- file.path(fig_dir, "corr_heatmap_2015.png")
+png(path, width = 1600, height = 1400, res = 160)
+print(p)
+invisible(dev.off())
+knitr::include_graphics(path)
+```
+```{r vif 2023}
+vif(mod_2023_red)
+```
+
+En 2023, la colinéarité reste présente mais est légèrement plus faible sur certaines variables :
+- `government_effectiveness` : 13,06 (reste > 10)
+- `cpi` : 11,71 (reste > 10)
+- `gdp_log` : 8,95 (passe sous 10)
+- `life_expectancy` : 5,11 (juste au-dessus de 5)
+
+On observe donc une colinéarité toujours importante autour du bloc institutionnel (`government_effectiveness`, `cpi`), et une colinéarité modérée sur les dimensions de développement (`gdp_log`, `life_expectancy`).
+
+```{r cor-2023, echo=FALSE, message=FALSE, warning=FALSE}
+X <- df23[, vars_x_red]
+C <- cor(X, use = "complete.obs")
+
+C_long <- as.data.frame(as.table(C))
+colnames(C_long) <- c("Var1","Var2","corr")
+
+p <- ggplot(C_long, aes(Var1, Var2, fill = corr)) +
+  geom_tile() +
+  coord_equal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Corrélations entre variables explicatives - 2023", x = "", y = "")
+
+path <- file.path(fig_dir, "corr_heatmap_2023.png")
+png(path, width = 1600, height = 1400, res = 160)
+print(p)
+invisible(dev.off())
+knitr::include_graphics(path)
+```
+
+Les diagnostics montrent une colinéarité importante dans les deux années, surtout entre indicateurs institutionnels et de développement.
+
+5. ##### Comparaison des coefficients standardisés pour 2015 et 2023
+
+On compare les coefficients standardisés estimés sur les modèles réduits (sans `generosity`) pour 2015 et 2023. Les variables explicatives ayant été centrées-réduites, les coefficients sont comparables entre variables.
+
+```{r coef_standar}
+# 2015 standardisé
+X15 <- scale(df15[, vars_x_red])
+df15_std <- data.frame(happiness_score = df15$happiness_score, X15)
+mod_2015_std <- lm(happiness_score ~ ., data = df15_std)
+
+# 2023 standardisé
+X23 <- scale(df23[, vars_x_red])
+df23_std <- data.frame(happiness_score = df23$happiness_score, X23)
+mod_2023_std <- lm(happiness_score ~ ., data = df23_std)
+
+coef15s <- broom::tidy(mod_2015_std); coef15s$year <- 2015
+coef23s <- broom::tidy(mod_2023_std); coef23s$year <- 2023
+coef_all_s <- rbind(coef15s, coef23s)
+```
+
+```{r graph_coef, echo=FALSE, message=FALSE, warning=FALSE}
+p <- ggplot(coef_all_s[coef_all_s$term != "(Intercept)", ],
+            aes(x = term, y = estimate, fill = as.factor(year))) +
   geom_bar(stat="identity", position="dodge") +
   coord_flip() +
-  labs(title="Comparaison des coefficients 2015 / 2024",
-       fill="Année")
+  labs(title="Comparaison des coefficients standardisés 2015 / 2023",
+       x="", y="Coefficient standardisé", fill="Année")
+
+path <- file.path(fig_dir, "comparaison_coefficients_standardises_2015_2023.png")
+png(path, width=1600, height=1100, res=160)
+print(p)
+invisible(dev.off())
+knitr::include_graphics(path)
 ```
 
-L’évolution de la relation entre corruption perçue et bonheur ne traduit probablement pas un phénomène réel, mais plutôt une redistribution de variance entre variables corrélées en 2024.
+Le graphique met en évidence les variables qui contribuent le plus à l’explication du score de bonheur, entre 2015 et 2023.
 
-5. ##### Test d'un modèle avec interactions
+En 2015, les effets standardisés dominants sont :
 
-Au vu de la non linéarité et du changements du signe de 2024, on test : 
+- `gdp_log` et `life_expectancy`, qui ressortent comme les deux dimensions les plus associées positivement à `happiness_score`,
+- `freedom_to_choose`, également positif et important,
+- `government_effectiveness`, dont l’effet est négatif dans ce modèle multivarié, ce qui peut s’expliquer par la forte colinéarité avec d’autres indicateurs institutionnels (`cpi`, `gdp_log`), comme le montrent les VIF élevés.
 
-```{r interaction}
-mod_2024_int <- lm(happiness_score ~ gdp_per_capita * freedom_to_choose +
-                     social_support + healthy_life_expectancy +
-                     corruption_perception,
-                   data = df24)
+En 2023, la structure change :
 
-summary(mod_2024_int)
-AIC(mod_2024_red, mod_2024_int)
+- `gdp_log` et `freedom_to_choose` deviennent les deux contributions positives les plus fortes,
+- `life_expectancy` devient beaucoup plus faible, ce qui indique qu’à variables contrôlées identiques, son effet propre est moins marqué en 2023 dans ce modèle,
+- `voice_accountability` apparaît plus important qu’en 2015, ce qui suggère un rôle institutionnel plus visible dans l’explication du bonheur en 2023.
+
+Les variables du marché du travail gardent un signal stable :
+
+- `unemployment_rate` reste négatif dans les deux années,
+- `active_population_rate` est légèrement négatif, surtout en 2023.
+
+Enfin, les variables environnementales (`co2_emissions_per_capita`, `temperature_change_from_ghg`) ont des coefficients standardisés proches de zéro, ce qui indique qu’elles apportent peu d’information supplémentaire dans ce cadre linéaire une fois les variables socio-économiques et institutionnelles prises en compte.
+
+Ces résultats doivent toutefois être interprétés avec prudence pour les variables institutionnelles (`cpi`, `government_effectiveness`), car la colinéarité est forte (VIF > 10), ce qui peut rendre l’estimation de leurs effets propres instable.
+
+
+6. ##### Observations influentes
+
+```{r influence_2015}
+# Observations influentes 2015
+cooks15 <- cooks.distance(mod_2015_red)
+lev15 <- hatvalues(mod_2015_red)
+
+top_cook15 <- order(cooks15, decreasing = TRUE)[1:5]
 ```
 
-On observe que l'Interaction est marginalement significative (p = 0.077). La variable `healthy_life_expectancy` devient presque significative (p = 0.056). Le R² ajusté reste très similaire (0.814). L’AIC baisse (190.28 contre 191.58), le modèle avec interaction donc est meilleur.
+```{r id_pts_influ_2015}
+tab_infl_2015 <- tibble(
+  id = top_cook15,
+  country = df15[top_cook15, "country"],
+  cook = cooks15[top_cook15],
+  leverage = lev15[top_cook15],
+  happiness_score = df15[top_cook15, "happiness_score"]
+) %>%
+  arrange(desc(cook))
 
-Cela signifie que l’effet de la liberté perçue sur le bonheur dépend du niveau économique du pays. Concrètement, la liberté contribue encore plus au bien-être dans les pays les plus riches.
+knitr::kable(tab_infl_2015, digits = 4, caption = "Observations les plus influentes (2015)")
+```
+
+En 2015, les 5 observations les plus influentes selon la distance de Cook sont les indices 60, 66, 114, 107 et 116. Leurs distances de Cook restent faibles (entre 0,042 et 0,073) et leurs valeurs de leverage sont modérées (entre 0,088 et 0,207).
+
+Cela indique qu’il existe bien quelques pays un peu atypiques, mais aucun point ne domine fortement l’estimation du modèle. L’influence est donc présente mais limitée en 2015.
+
+```{r cooks-plot-2015, echo=FALSE, message=FALSE, warning=FALSE}
+ck <- cooks.distance(mod_2015_red)
+tmp <- data.frame(id = seq_along(ck), cook = ck)
+
+p <- ggplot(tmp, aes(x = reorder(as.factor(id), cook), y = cook)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Distance de Cook - 2015 (modèle réduit)", x = "Observation (indice)", y = "Cook")
+
+path <- file.path(fig_dir, "cooks_2015.png")
+png(path, width = 1600, height = 1100, res = 160)
+print(p)
+invisible(dev.off())
+knitr::include_graphics(path)
+```
+
+```{r influence_2023}
+# Observations influentes 2023
+cooks23 <- cooks.distance(mod_2023_red)
+lev23 <- hatvalues(mod_2023_red)
+
+top_cook23 <- order(cooks23, decreasing = TRUE)[1:5]
+```
+
+```{r id_pts_influ_2023}
+tab_infl_2023 <- tibble(
+  id = top_cook23,
+  country = df23[top_cook23, "country"],
+  cook = cooks23[top_cook23],
+  leverage = lev23[top_cook23],
+  happiness_score = df23[top_cook23, "happiness_score"]
+) %>%
+  arrange(desc(cook))
+
+knitr::kable(tab_infl_2023, digits = 4, caption = "Observations les plus influentes (2023)")
+```
+
+En 2023, l’influence est nettement plus marquée. Les 5 observations les plus influentes sont 124, 121, 83, 116 et 40, avec des distances de Cook beaucoup plus élevées (jusqu’à 0,247 et 0,203 pour 124 et 121). On note aussi que certaines observations combinent leverage élevé et influence importante, en particulier :
+
+- 83 avec un leverage très élevé (0,415),
+- 40 avec un leverage élevé (0,314),
+- ainsi que 121 et 124 avec un leverage autour de 0,165–0,184.
+
+Ces résultats confirment ce que suggéraient les graphes de diagnostic : en 2023, quelques pays pèsent davantage sur l’estimation, ce qui peut expliquer une normalité moins bonne des résidus et une sensibilité plus forte de certains coefficients.
+
+```{r cooks-plot-2023, echo=FALSE, message=FALSE, warning=FALSE}
+ck <- cooks.distance(mod_2023_red)
+tmp <- data.frame(id = seq_along(ck), cook = ck)
+
+p <- ggplot(tmp, aes(x = reorder(as.factor(id), cook), y = cook)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Distance de Cook - 2023 (modèle réduit)", x = "Observation (indice)", y = "Cook")
+
+path <- file.path(fig_dir, "cooks_2023.png")
+png(path, width = 1600, height = 1100, res = 160)
+print(p)
+invisible(dev.off())
+knitr::include_graphics(path)
+```
+
+7. ##### Analyse de robustesse
+
+```{r robustesse_influence_2015}
+# retirer les 5 plus influents 2015
+df15_rob <- df15[-top_cook15, ]
+mod_2015_red_rob <- lm(form_red, data = df15_rob)
+
+summary(mod_2015_red_rob)
+
+# comparaison coefficients
+cbind(
+  coef_full = coef(mod_2015_red),
+  coef_rob  = coef(mod_2015_red_rob)
+)
+```
+
+```{r coef-stab-2015, echo=FALSE, message=FALSE, warning=FALSE}
+cf_full <- coef(mod_2015_red)
+cf_rob  <- coef(mod_2015_red_rob)
+
+tmp <- data.frame(
+  term = names(cf_full),
+  full = as.numeric(cf_full),
+  rob  = as.numeric(cf_rob)
+)
+tmp <- tmp[tmp$term != "(Intercept)", ]
+
+tmp_long <- rbind(
+  data.frame(term = tmp$term, estimate = tmp$full, model = "Modèle complet"),
+  data.frame(term = tmp$term, estimate = tmp$rob,  model = "Sans top 5 Cook")
+)
+
+p <- ggplot(tmp_long, aes(x = term, y = estimate, fill = model)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  labs(title = "Stabilité des coefficients - 2015", x = "", y = "Coefficient")
+
+path <- file.path(fig_dir, "stabilite_coef_2015.png")
+png(path, width = 1600, height = 1100, res = 160)
+print(p)
+invisible(dev.off())
+knitr::include_graphics(path)
+```
+
+Après retrait des 5 observations les plus influentes (indices 60, 66, 114, 107, 116), le modèle reste globalement très proche, mais certains résultats évoluent.
+
+- Qualité d’ajustement : elle augmente nettement
+  - R² passe de 0,7701 à 0,8103
+  - R² ajusté passe de 0,7477 à 0,7909
+  - l’erreur standard résiduelle baisse de 0,5784 à 0,5261
+
+- Coefficients stables (robustes) :
+  - `gdp_log` reste quasi identique (0,5224 puis 0,5214) et reste significatif (p = 0,0012)
+  - `unemployment_rate` reste très proche (-0,0333 puis -0,0323) et significatif (p = 0,0050)
+
+- Coefficients qui changent en amplitude :
+  - `life_expectancy` augmente (0,0518 puis 0,0644) et devient encore plus significatif (p = 0,00018)
+  - `freedom_to_choose` augmente (1,1761 puis 1,3878) et devient plus significatif (p = 3.02e-05)
+
+- Variables sensibles aux points influents :
+  - `voice_accountability` baisse fortement (0,1586 puis 0,0563) et devient clairement non significatif (p = 0,58)
+  - `co2_emissions_per_capita` change d’amplitude (-0,0021 puis -0,0144) mais reste non significatif (p = 0,40)
+  - `government_effectiveness` reste négatif et devient “limite” au seuil 10% (p = 0,073)
+
+Les déterminants principaux du modèle (`gdp_log`, `life_expectancy`, `freedom_to_choose`, `unemployment_rate`) restent cohérents et même renforcés après retrait des points influents. En revanche, l’effet de certaines variables institutionnelles (`voice_accountability`) est peu robuste.
+
+```{r robustesse_influence_2023}
+# retirer les 5 plus influents 2023
+df23_rob <- df23[-top_cook23, ]
+mod_2023_red_rob <- lm(form_red, data = df23_rob)
+
+summary(mod_2023_red_rob)
+
+# comparaison coefficients
+cbind(
+  coef_full = coef(mod_2023_red),
+  coef_rob  = coef(mod_2023_red_rob)
+)
+```
+
+```{r coef-stab-2023, echo=FALSE, message=FALSE, warning=FALSE}
+cf_full <- coef(mod_2023_red)
+cf_rob  <- coef(mod_2023_red_rob)
+
+tmp <- data.frame(
+  term = names(cf_full),
+  full = as.numeric(cf_full),
+  rob  = as.numeric(cf_rob)
+)
+tmp <- tmp[tmp$term != "(Intercept)", ]
+
+tmp_long <- rbind(
+  data.frame(term = tmp$term, estimate = tmp$full, model = "Modèle complet"),
+  data.frame(term = tmp$term, estimate = tmp$rob,  model = "Sans top 5 Cook")
+)
+
+p <- ggplot(tmp_long, aes(x = term, y = estimate, fill = model)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  labs(title = "Stabilité des coefficients - 2023", x = "", y = "Coefficient")
+
+path <- file.path(fig_dir, "stabilite_coef_2023.png")
+png(path, width = 1600, height = 1100, res = 160)
+print(p)
+invisible(dev.off())
+knitr::include_graphics(path)
+```
+
+Après retrait des 5 observations les plus influentes (124, 121, 83, 116, 40), le modèle change davantage sur certaines variables.
+
+- Qualité d’ajustement : elle augmente nettement
+  - R² passe de 0,8079 à 0,8442
+  - R² ajusté passe de 0,7892 à 0,8283
+  - l’erreur standard résiduelle baisse de 0,5239 à 0,4546
+
+- Coefficients très robustes :
+
+  - `voice_accountability` est pratiquement inchangé (0,2526 puis 0,2515) et reste significatif (p = 0,0037)
+  - `gdp_log` reste positif ( 0,6146 puis 0,5543 ) et significatif (p = 3.09e-06)
+  - `freedom_to_choose` reste positif ( 2,2621 puis 2,1053 ) et très significatif (p = 6.65e-10)
+
+- Coefficients qui perdent leur significativité :
+  - `unemployment_rate` devient non significatif (p = 0,151)
+  - `active_population_rate` devient non significatif (p = 0,131)
+Ces deux variables restent négatives, mais leur “effet propre” n’est plus statistiquement confirmé après retrait des points influents.
+
+- Variable qui devient significative :
+  - `urban_population_rate` devient significatif au seuil de 5% (p = 0,0416) et son coefficient augmente (0,0053 puis 0,0068)
+
+- Signes instables :
+  - `temperature_change_from_ghg` change de signe (-0,0642 puis 0,1514) et reste non significatif (p = 0,906).
+Cela confirme que cette variable n’a pas un effet stable dans ce modèle.
+
+Les résultats les plus stables sont `gdp_log`, `freedom_to_choose` et `voice_accountability`. En revanche, `unemployment_rate` et `active_population_rate` apparaissent sensibles à quelques pays influents, ce qui impose de nuancer leur interprétation.
+
+8. ##### Le modèle qui généralise le mieux 
+
+```{r cv-modeles, echo=TRUE, message=FALSE, warning=FALSE}
+set.seed(123)
+
+eval_cv <- function(df, models, v = 10, repeats = 5) {
+  folds <- rsample::vfold_cv(df, v = v, repeats = repeats)
+
+  res <- purrr::map_dfr(folds$splits, function(split) {
+    train <- rsample::analysis(split)
+    test  <- rsample::assessment(split)
+
+    purrr::map_dfr(names(models), function(mn) {
+      fit <- models[[mn]](train)
+      pred <- predict(fit, newdata = test)
+      obs <- test$happiness_score
+
+      rmse <- sqrt(mean((obs - pred)^2, na.rm = TRUE))
+      mae  <- mean(abs(obs - pred), na.rm = TRUE)
+      r2   <- 1 - sum((obs - pred)^2, na.rm = TRUE) /
+        sum((obs - mean(obs, na.rm = TRUE))^2, na.rm = TRUE)
+
+      data.frame(model = mn, RMSE = rmse, MAE = mae, R2 = r2)
+    })
+  })
+
+  res %>%
+    group_by(model) %>%
+    summarise(
+      RMSE_mean = mean(RMSE), RMSE_sd = sd(RMSE),
+      MAE_mean  = mean(MAE),  MAE_sd  = sd(MAE),
+      R2_mean   = mean(R2),   R2_sd   = sd(R2),
+      .groups = "drop"
+    ) %>%
+    arrange(RMSE_mean)
+}
+
+# Formules stepAIC déjà sélectionnées plus haut dans ton notebook
+form_step_2015 <- formula(mod_2015_step)
+form_step_2023 <- formula(mod_2023_step)
+
+# Modèles à comparer (formules fixées)
+models_2015 <- list(
+  "Complet" = function(train) lm(form, data = train),
+  "Réduit (sans generosity)" = function(train) lm(form_red, data = train),
+  "StepAIC (formule fixée)" = function(train) lm(form_step_2015, data = train)
+)
+
+models_2023 <- list(
+  "Complet" = function(train) lm(form, data = train),
+  "Réduit (sans generosity)" = function(train) lm(form_red, data = train),
+  "StepAIC (formule fixée)" = function(train) lm(form_step_2023, data = train)
+)
+
+# CV 2015
+cv15 <- eval_cv(df15, models_2015, v = 10, repeats = 5)
+knitr::kable(cv15, digits = 4,
+             caption = "Validation croisée 10-fold répétée (2015) : comparaison des modèles")
+```
+
+Le modèle qui généralise le mieux est StepAIC.
 
 
-6. ##### Modèle sur la décennie entière, de 2015 à 2024
+```{r cv_modeles2, echo=TRUE, message=FALSE, warning=FALSE}
+# CV 2023
+cv23 <- eval_cv(df23, models_2023, v = 10, repeats = 5)
+knitr::kable(cv23, digits = 4,
+             caption = "Validation croisée 10-fold répétée (2023) : comparaison des modèles")
+```
 
-Dans cette dernière partie, on exploite le jeu de données sur l'ensemble de la décennie 2015–2024 afin de tenir compte à la fois des différences entre pays et de l’évolution temporelle du bonheur.
+Le modèle qui généralise le mieux est StepAIC. On observe des écarts encore plus marqués.
+
+Sur 2015 comme sur 2023, le modèle StepAIC (formule fixée) obtient la meilleure performance prédictive hors échantillon. Le modèle réduit sans `generosity` arrive en deuxième, et le modèle complet est le moins performant. 
+
+9. ##### Régularisation (Ridge/Lasso)
+
+```{r cv-glmnet-fun, echo=TRUE, message=FALSE, warning=FALSE}
+# CV Ridge/Lasso via rsample + glmnet
+eval_cv_glmnet <- function(df, vars_x, v = 10, repeats = 5, alpha = 0) {
+  folds <- rsample::vfold_cv(df, v = v, repeats = repeats)
+
+  res <- purrr::map_dfr(folds$splits, function(split) {
+    train <- rsample::analysis(split)
+    test  <- rsample::assessment(split)
+
+    # Matrices modèle (glmnet veut des matrices numériques)
+    x_train <- model.matrix(
+      as.formula(paste("happiness_score ~", paste(vars_x, collapse = " + "))),
+      data = train
+    )[ , -1, drop = FALSE]  # enlever intercept
+
+    y_train <- train$happiness_score
+
+    x_test <- model.matrix(
+      as.formula(paste("happiness_score ~", paste(vars_x, collapse = " + "))),
+      data = test
+    )[ , -1, drop = FALSE]
+
+    y_test <- test$happiness_score
+
+    # CV interne glmnet pour choisir lambda sur le train uniquement
+    cvfit <- glmnet::cv.glmnet(
+      x = x_train, y = y_train,
+      alpha = alpha,
+      standardize = TRUE
+    )
+
+    pred <- as.numeric(predict(cvfit, newx = x_test, s = "lambda.min"))
+
+    rmse <- sqrt(mean((y_test - pred)^2, na.rm = TRUE))
+    mae  <- mean(abs(y_test - pred), na.rm = TRUE)
+    r2   <- 1 - sum((y_test - pred)^2, na.rm = TRUE) /
+      sum((y_test - mean(y_test, na.rm = TRUE))^2, na.rm = TRUE)
+
+    data.frame(RMSE = rmse, MAE = mae, R2 = r2)
+  })
+
+  res %>%
+    summarise(
+      RMSE_mean = mean(RMSE), RMSE_sd = sd(RMSE),
+      MAE_mean  = mean(MAE),  MAE_sd  = sd(MAE),
+      R2_mean   = mean(R2),   R2_sd   = sd(R2)
+    )
+}
+```
+
+```{r cv-glmnet-2015, echo=TRUE, message=FALSE, warning=FALSE}
+set.seed(123)
+
+# On utilise vars_x_red (sans generosity) comme pour tes modèles réduits
+res_ridge_2015 <- eval_cv_glmnet(df15, vars_x_red, v = 10, repeats = 5, alpha = 0)
+res_lasso_2015 <- eval_cv_glmnet(df15, vars_x_red, v = 10, repeats = 5, alpha = 1)
+res_enet_2015  <- eval_cv_glmnet(df15, vars_x_red, v = 10, repeats = 5, alpha = 0.5)
+
+tab_glmnet_2015 <- bind_rows(
+  data.frame(model = "Ridge (alpha=0)",  res_ridge_2015),
+  data.frame(model = "Lasso (alpha=1)",  res_lasso_2015),
+  data.frame(model = "Elastic Net (alpha=0.5)", res_enet_2015)
+) %>% arrange(RMSE_mean)
+
+knitr::kable(tab_glmnet_2015, digits = 4,
+             caption = "Validation croisée 10-fold répétée (2015) : Ridge / Lasso / Elastic Net (glmnet)")
+```
+
+En 2015, StepAIC est légèrement plus efficace que le Ridge (RMSE moyen StepAIC ≈ 0,588 contre RMSE moyen Ridge ≈ 0,594).
+
+```{r cv-glmnet-2023, echo=TRUE, message=FALSE, warning=FALSE}
+set.seed(123)
+
+res_ridge_2023 <- eval_cv_glmnet(df23, vars_x_red, v = 10, repeats = 5, alpha = 0)
+res_lasso_2023 <- eval_cv_glmnet(df23, vars_x_red, v = 10, repeats = 5, alpha = 1)
+res_enet_2023  <- eval_cv_glmnet(df23, vars_x_red, v = 10, repeats = 5, alpha = 0.5)
+
+tab_glmnet_2023 <- bind_rows(
+  data.frame(model = "Ridge (alpha=0)",  res_ridge_2023),
+  data.frame(model = "Lasso (alpha=1)",  res_lasso_2023),
+  data.frame(model = "Elastic Net (alpha=0.5)", res_enet_2023)
+) %>% arrange(RMSE_mean)
+
+knitr::kable(tab_glmnet_2023, digits = 4,
+             caption = "Validation croisée 10-fold répétée (2023) : Ridge / Lasso / Elastic Net (glmnet)")
+```
+
+En 2023, StepAIC est encore plus efficace que le Ridge (RMSE moyen StepAIC ≈ 0,534 contre RMSE moyen Ridge ≈ 0,550 et Elastic Net ≈ 0,547).
+
+Dans nos données, la régularisation (Ridge/Lasso) ne surpasse pas StepAIC en RMSE, mais elle peut être utilisé comme une réponse à la colinéarité car elle stabilise les coefficients et limite la variance des estimations.
+
+10. ##### Comparaison globale de tous les modèles
+
+```{r plot-compare-models, echo=FALSE, message=FALSE, warning=FALSE}
+# On suppose que ces objets existent déjà :
+# cv15, cv23, tab_glmnet_2015, tab_glmnet_2023
+
+# Harmoniser les noms et ajouter l'année
+cv15_all <- cv15 %>%
+  mutate(year = "2015")
+
+cv23_all <- cv23 %>%
+  mutate(year = "2023")
+
+glm15_all <- tab_glmnet_2015 %>%
+  mutate(year = "2015")
+
+glm23_all <- tab_glmnet_2023 %>%
+  mutate(year = "2023")
+
+# Mettre tout ensemble
+all_models <- bind_rows(cv15_all, cv23_all, glm15_all, glm23_all) %>%
+  mutate(
+    model = factor(model),
+    year  = factor(year, levels = c("2015","2023"))
+  )
+
+# Graphique RMSE moyen + barre d'erreur (écart-type entre folds)
+p <- ggplot(all_models, aes(x = model, y = RMSE_mean, fill = year)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  geom_errorbar(
+    aes(ymin = RMSE_mean - RMSE_sd, ymax = RMSE_mean + RMSE_sd),
+    position = position_dodge(width = 0.8),
+    width = 0.2
+  ) +
+  coord_flip() +
+  labs(
+    title = "Comparaison globale des modèles (RMSE moyen en CV)",
+    x = "Modèle",
+    y = "RMSE moyen (± 1 écart-type)",
+    fill = "Année"
+  )
+
+path <- file.path(fig_dir, "comparaison_globale_modeles_rmse.png")
+png(path, width = 1700, height = 1100, res = 160)
+print(p)
+invisible(dev.off())
+knitr::include_graphics(path)
+```
+
+L’objectif était de modéliser le score de bonheur (`happiness_score`) en 2015 et en 2023 à partir d’un ensemble de variables socio-économiques, institutionnelles et environnementales, puis de choisir un modèle qui généralise le mieux.
+
+Sur les deux années, les modèles linéaires ont un bon pouvoir explicatif en ajustement (R² ≈ 0,77 en 2015 et ≈ 0,81 en 2023 pour le modèle complet). Les déterminants les plus stables et les plus robustes sont `gdp_log` et `freedom_to_choose`, qui ressortent positifs dans les deux périodes. En 2015, `life_expectancy` est également un contributeur important, alors qu’en 2023 son effet propre devient faible une fois les autres variables contrôlées. Côté institutionnel, `voice_accountability` apparaît plus nettement en 2023. Les variables environnementales apportent peu d’information supplémentaire dans ce cadre linéaire, une fois les variables de développement et institutionnelles prises en compte.
+
+Les diagnostics mettent en évidence deux limites importantes. D’abord, une colinéarité marquée, surtout autour du bloc institutionnel et développement (`cpi`, `government_effectiveness`, et `gdp_log`), confirmée par des VIF élevés. Ensuite, la présence d’observations influentes, particulièrement en 2023, ce qui impose de rester prudent dans l’interprétation causale et même dans l’interprétation fine de certains coefficients.
+
+Pour le choix de modèle, la validation croisée montre que le modèle StepAIC (formule fixée) est le meilleur en prédiction hors échantillon sur les deux années. En 2015, il obtient un RMSE moyen d’environ 0,588, légèrement meilleur que Ridge (≈ 0,594) et meilleur que les modèles complet et réduit. En 2023, l’écart est plus net, avec un RMSE moyen d’environ 0,530 pour StepAIC, contre ≈ 0,55 pour Ridge et Elastic Net, et ≈ 0,552 pour les modèles complet et réduit. Le graphique final synthétise bien ce résultat, StepAIC est systématiquement parmi les plus performants, et 2023 présente globalement des RMSE plus faibles que 2015.
+
+Enfin, la régularisation (Ridge, Lasso, Elastic Net) ne surpasse pas StepAIC en RMSE dans ces données, mais elle reste pertinente comme réponse à la colinéarité car elle stabilise l’estimation des coefficients et peut limiter la variance. Par la suite, si l’objectif prioritaire devient la prédiction, StepAIC sera le meilleur choix. Si l’objectif nécessite davantage la robustesse des coefficients dans un contexte colinéaire, Ridge ou Elastic Net peuvent rester intéressants, à condition d’accepter une performance prédictive légèrement inférieure dans les résultats.
