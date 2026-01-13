@@ -21,7 +21,7 @@ library(knitr)
 Le fichier nettoyé dans Le notebook `nettoyage_des_données.ipynb`, `world_happiness_2023_clean.csv`, est utilisé dans Le cadre de cette seconde ACP.
 
 ```{r chargement_des_données}
-data <- file.path("..","data", "clean", "world_happiness_2023_clean.csv")
+data <- file.path("..", "data", "clean", "world_happiness_2023_clean.csv")
 df <- read.csv(data, header = TRUE, sep = ";", stringsAsFactors = FALSE)
 names(df)
 
@@ -530,4 +530,3 @@ Le cercle des corrélations est semblable à celui de 2015 :
 - Dim 2 reste une opposition entre chômage d’un côté et générosité / liberté de choix de l’autre,
 
 Le plan (1,2) est a une part d'inertie similaire en 2023 (61.21 %) et en 2015 (64.67 %).
-
