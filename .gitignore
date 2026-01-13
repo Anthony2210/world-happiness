@@ -3,6 +3,7 @@
 
 data/
 figure/
+rapport/
 *.csv
 *.xlsx
 
