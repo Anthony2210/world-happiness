@@ -2,8 +2,6 @@
 .env
 
 data/
-figure/
-rapport/
 *.csv
 *.xlsx
 
@@ -26,3 +24,15 @@ figure/*.tmp
 
 *_files/
 *.yml
+
+# Latex (rapport)
+*.aux
+*.bcf
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
