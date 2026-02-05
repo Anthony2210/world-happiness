@@ -11,7 +11,7 @@
 \usepackage[french]{babel}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Police (NETTE, vectorielle)
+% Police
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{lmodern}
 
@@ -46,19 +46,9 @@
 \hypersetup{pdfborder={0 0 0}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% TikZ et PGFPLOTS (ORDRE CRUCIAL)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage{tikz}
-\usetikzlibrary{external,positioning,arrows.meta}
-
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.18}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Titres
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{titlesec}
-
 \renewcommand{\thesection}{\arabic{section}.}
 \renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}.}
 \renewcommand{\thesubsubsection}{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}.}
@@ -72,7 +62,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Divers + bibliographie
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage{enumitem}
 \usepackage{soul}
 \usepackage{csquotes}
 \usepackage[
@@ -82,12 +71,10 @@
 ]{biblatex}
 \addbibresource{references.bib}
 
-\onehalfspacing                       % Interligne à 1.5
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Métadonnées (optionnel, tu utilises surtout titlepage)
+% Métadonnées
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{\vspace{-4cm}Mémoire de mi-parcours M1\\[0.3cm]WORLD HAPPINESS}
+\title{\vspace{-3cm}Mémoire de mi-parcours M1\\[0.2cm]WORLD HAPPINESS}
 \author{Anthony Combes-Aguéra}
 \date{Année universitaire 2025-2026}
 
@@ -99,35 +86,1080 @@
 \begin{titlepage}
   \thispagestyle{empty}
   \centering
-  \vspace*{1cm}
 
-  {\Large Projet personnel\\[0.2cm]WORLD HAPPINESS\\[0.5cm]}
+  % En-tête établissement
+  {\Large Université Paul-Valéry Montpellier 3\\}
+  \vspace{0.15cm}
+  {\large Master MIASHS\\}
+  \vspace{0.15cm}
+  {\large Mémoire de mi-parcours M1\\}
+  \vspace{0.6cm}
 
-  \rule{1\textwidth}{0.9pt}\\[0.5cm]
-  {\Large \textbf{Analyse exploratoire et préparation des données}\\[0.2cm]
-  \textbf{World Happiness 2015--2023}}\\[0.5cm]
-  {\Large Mémoire de mi-parcours M1}\\[0.2cm]
-  \rule{1\textwidth}{0.9pt}\\[1cm]
+  \rule{1\textwidth}{0.9pt}\\[0.55cm]
 
-  {\Large Réalisé par\\[0.15cm]
-  Anthony COMBES-AGUÉRA\\[0.8cm]}
+  % Titre
+  {\LARGE \textbf{Analyse longitudinale du score de bonheur à partir du World Happiness Report}\\[0.25cm]}
+  {\Large \textbf{Période 2015 à 2023}}\\[0.4cm]
 
-  % Logo 
-  \includegraphics[width=0.7\textwidth]{Images/Logo/upvm_4.jpg}\\[0.5cm]
+  % Sous-titre méthodo
+  {\large Préparation des données, analyse exploratoire, ACP et régression linéaire}\\[0.45cm]
 
-  {\Large Année universitaire 2025--2026}
+  \rule{1\textwidth}{0.9pt}\\[0.9cm]
+
+  % Auteur
+  {\large Réalisé par}\\[0.2cm]
+  {\Large \textbf{Anthony Combes-Aguéra}}\\[0.9cm]
+
+  % Logos
+  \begin{minipage}[c]{0.45\textwidth}
+    \centering
+    \includegraphics[width=0.9\linewidth]{Images/Logo/upvm_4.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[c]{0.45\textwidth}
+    \centering
+    \includegraphics[width=0.9\linewidth]{Images/Logo/master.pdf}
+  \end{minipage}
+
+  \vspace{0.6cm}
+
+  \includegraphics[width=0.33\linewidth]{Images/Logo/whr.png}
+
+  \vfill
+
+  {\large Année universitaire 2025-2026}
 \end{titlepage}
 
-% afficher les subsubsections ou non dans le sommaire
-% \setcounter{tocdepth}{2}
 
 \tableofcontents
 \newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Contenu
+% 1. Introduction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Introduction et contexte}
-% ...
+\section{Introduction}
+\subsection{Présentation World Happiness Report}
+Le World Happiness Report (WHR) est une publication annuelle consacrée au bien-être dans le monde. Il est publié par le Wellbeing Research Centre de l'Université d'Oxford, en partenariat avec Gallup et le Réseau des solutions de développement durable des Nations Unies (SDSN). \cite{whr-about}
+Le WHR propose un cadre de comparaison internationale fondé sur une mesure standardisée du bien-être déclaratif, ce qui permet d’étudier les écarts entre pays et leur évolution au cours du temps. Le classement du WHR repose sur une mesure unique, appelée \texttt{life evaluation}, issue du Gallup World Poll et basée sur l’échelle de Cantril. Les personnes interrogées positionnent leur vie actuelle sur une échelle de 0 à 10, où 0 correspond à la pire vie possible et 10 à la meilleure vie possible.
+Cette mesure synthétise une appréciation globale de la qualité de vie et elle varie fortement entre pays, ce qui la rend exploitable pour des analyses comparatives. \cite{whr-faq} Le WHR met également à disposition une plateforme de visualisation permettant d’explorer les résultats. Elle donne accès à une carte interactive du score de bonheur et à plusieurs facteurs associés, ce qui facilite la lecture des contrastes spatiaux et des ordres de grandeur.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\linewidth]{Images/screen/screen_whr_carte.jpeg}
+\caption{Capture d'écran d'une des visualisation proposée sur la plateforme du World Happiness Report.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : Plateforme du World Happiness Report. \cite{whr-map}}
+\label{fig:screen_whr}
+\end{figure}
+
+Pour ce projet, les données brutes du WHR ont été récupérées via un jeu de données Kaggle regroupant les tables annuelles 2015 à 2024 \cite{kaggle-whr-2015-2024}.
+
+\subsection{Objectif mi-parcours M1}
+
+L’objectif lors de ce premier semestre est d’étudier le score de bonheur comme variable quantitative sur la période 2015 à 2023. Le travail vise à décrire les tendances globales, à comparer les trajectoires par région et par pays, puis à analyser la structure des relations entre variables explicatives. L’analyse est organisée autour de trois volets.
+Le premier volet est descriptif. Il consiste à produire des profils temporels globaux, régionaux et nationaux afin de mettre en évidence les tendances, les ruptures et les écarts persistants.
+Le second volet repose sur une Analyse en Composantes Principales (ACP). Elle permet de résumer l’information multivariée, d’interpréter des axes comme des dimensions latentes et de comparer la structure des corrélations entre 2015 et 2023.
+Le troisième volet s’appuie sur une modélisation par régression linéaire afin de quantifier l’association entre le score de bonheur et les variables explicatives, puis d’évaluer la robustesse des modèles via des diagnostics.
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 2. Environnement de travail et outils utilisés
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Environnement de travail et outils utilisés}
+
+Ce projet a été réalisé dans un environnement de travail combinant Python, R et \LaTeX{}, avec un objectif de reproductibilité et de cohérence méthodologique sur l’ensemble des analyses menées entre 2015 et 2023.
+
+\subsection{Organisation générale du projet}
+
+Le projet est structuré de manière modulaire afin de séparer clairement les différentes étapes du pipeline d’analyse.
+Les données brutes sont stockées séparément des données nettoyées, et les figures générées automatiquement sont organisées par type d’analyse (ACP, corrélations, régression).
+Cette organisation facilite à la fois la lisibilité du projet et la reproductibilité des résultats.
+Le code est versionné à l’aide de Git, avec un dépôt GitHub comprenant plusieurs branches dédiées au développement du code, à la génération des figures et à la rédaction du rapport.
+
+\subsection{Langages et environnements}
+
+Deux langages principaux sont utilisés. Python est mobilisé pour la récupération des données, le nettoyage, l’harmonisation des variables et la construction des jeux de données finaux.
+Ces étapes incluent notamment la gestion des valeurs manquantes, l’uniformisation des noms de pays et de régions, ainsi que la création d’un panel équilibré sur la période étudiée.
+R est utilisé pour les analyses statistiques, en particulier pour les analyses en composantes principales et les modèles de régression. Les analyses sont rédigées et exécutées sous forme de documents Quarto (\texttt{.qmd}), permettant de combiner code, résultats et commentaires analytiques dans un même support reproductible.
+L’ensemble du projet est développé sous Visual Studio Code, utilisé à la fois pour Python, R, Quarto et \LaTeX{}.
+
+\subsection{Bibliothèques et packages}
+
+En Python, les principales bibliothèques utilisées sont :
+\begin{itemize}
+  \item \texttt{pandas} et \texttt{numpy} pour la manipulation et le traitement des données ;
+  \item \texttt{matplotlib} et \texttt{seaborn} pour les visualisations exploratoires ;
+  \item \texttt{scikit-learn} pour certaines étapes de préparation et d’évaluation des modèles ;
+  \item \texttt{jupyter} pour le développement et la vérification intermédiaire des traitements.
+\end{itemize}
+
+En R, les analyses reposent principalement sur :
+\begin{itemize}
+  \item \texttt{FactoMineR} et \texttt{factoextra} pour les analyses en composantes principales ;
+  \item \texttt{corrplot} pour la visualisation des matrices de corrélation ;
+  \item \texttt{ggplot2} pour les graphiques personnalisés ;
+  \item \texttt{car}, \texttt{MASS} et \texttt{leaps} pour les modèles de régression et la sélection de variables ;
+  \item \texttt{glmnet} pour les méthodes de régularisation ;
+  \item \texttt{broom}, \texttt{dplyr} et \texttt{purrr} pour la manipulation et la structuration des résultats ;
+  \item \texttt{rsample} pour la validation croisée.
+\end{itemize}
+
+\subsection{Données et sources}
+
+Les données proviennent principalement du World Happiness Report, complété par des sources externes afin d’améliorer la comparabilité temporelle des variables.
+Les indicateurs socio-économiques sont issus de la Banque mondiale (WDI) et récupérés via des interfaces programmatiques.
+L’indice de perception de la corruption est fourni par Transparency International, également via une récupération automatisée.
+Les données environnementales relatives aux émissions de CO$_2$ proviennent de Our World in Data et sont intégrées à partir de fichiers CSV.
+Les données ne sont pas stockées directement dans le dépôt GitHub, mais l’ensemble des scripts nécessaires à leur récupération, nettoyage et transformation est disponible, garantissant la reproductibilité du pipeline.
+
+\subsection{Reproductibilité des analyses}
+
+Toutes les figures présentées dans ce rapport sont générées automatiquement à partir des scripts Python et R.
+Les analyses ACP de 2015 et 2023 suivent strictement la même méthodologie, de même que les modèles de régression estimés sur ces deux années.
+À partir des données nettoyées, l’ensemble du projet peut être reproduit, depuis le prétraitement des données jusqu’à la génération des figures finales.
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 3. Données et préparation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Données et préparation}
+
+\subsection{Structure générale des fichiers et variables du WHR}
+
+Le jeu de données Kaggle reprend, pour chaque année, un tableau pays contenant un score de bonheur (évaluation de vie) et plusieurs variables explicatives utilisées dans le WHR. L’unité statistique est le pays, observé sur une année, avec un score moyen issu des enquêtes Gallup et des indicateurs associés.
+Les variables du WHR sont résumées dans le tableau \ref{tab:variables_whr}.
+
+\vspace{0.2cm}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Variable} & \textbf{Description} \\
+\midrule
+
+\makecell[tl]{Score de bonheur\\{\footnotesize (\texttt{life\_evaluation} ou \texttt{happiness\_score})}} &
+Score moyen d’évaluation de vie sur l’échelle de Cantril (0 à 10), où 0 correspond à la pire vie possible et 10 à la meilleure vie possible. \\
+
+\makecell[tl]{Soutien social\\{\footnotesize (\texttt{social\_support})}} &
+Question d’enquête : \og Si vous aviez des problèmes, avez-vous des proches ou des amis sur lesquels compter pour vous aider quand vous en avez besoin \fg. \\
+
+\makecell[tl]{PIB par habitant\\{\footnotesize (\texttt{gdp\_per\_capita})}} &
+Indicateur économique en parité de pouvoir d’achat, exprimé en dollars internationaux constants (base 2017), issu des \textit{World Development Indicators} (Banque mondiale). \\
+
+\makecell[tl]{Espérance de vie en bonne santé\\{\footnotesize (\texttt{healthy\_life\_expectancy})}} &
+Indicateur construit à partir des données de l’OMS (\textit{Global Health Observatory}). Les millésimes peuvent être décalés par rapport à l’année d’observation. \\
+
+\makecell[tl]{Liberté de choix\\{\footnotesize (\texttt{freedom\_to\_choose})}} &
+Question d’enquête : \og Êtes-vous satisfait ou insatisfait de votre liberté de choisir ce que vous faites de votre vie \fg. \\
+
+\makecell[tl]{Générosité\\{\footnotesize (\texttt{generosity})}} &
+Question d’enquête : \og Avez-vous donné de l’argent à une association caritative au cours du dernier mois \fg. \\
+
+\makecell[tl]{Perception de la corruption\\{\footnotesize (\texttt{corruption\_perception})}} &
+Moyenne de deux questions : corruption dans le gouvernement et corruption dans les entreprises. Lorsque la mesure sur le gouvernement est manquante, la perception côté entreprises est utilisée comme proxy. \\
+
+\bottomrule
+\end{tabularx}
+\caption{Variables principales associées au score de bonheur dans les tables annuelles du WHR.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : Définitions publiées sur la plateforme WHR. \cite{whr-about,whr-faq}}
+\label{tab:variables_whr}
+\end{table}
+
+Un point important pour l’interprétation est que plusieurs variables sont des scores de perception issus de questions d’enquête (soutien social, liberté, générosité, corruption). Elles mesurent une opinion déclarée des répondants et non une statistique administrative directe. À l’inverse, certaines variables mobilisées dans le WHR sont construites à partir de bases internationales (PIB par habitant, espérance de vie en bonne santé). Les variables ne sont donc pas toutes produites selon le même protocole, ni avec la même granularité temporelle.
+
+\subsection{Anomalies trouvées}
+
+Lors de l’exploration initiale, plusieurs profils issus de la source Kaggle ont montré des ruptures brutales, difficiles à expliquer par une évolution progressive à l’échelle d’un pays ou au niveau mondial. Le cas le plus visible concerne la perception de la corruption.
+Dans \hyperref[fig:anomalie_corruption_finland]{la figure \ref{fig:anomalie_corruption_finland}}, la série de \texttt{corruption\_perception} pour la Finlande présente une rupture nette au cours de la décennie, avec un changement d’échelle qui ne suit pas une dynamique régulière. Une rupture du même type apparaît également sur la moyenne mondiale, présentée dans \hyperref[fig:anomalie_corruption_global]{la figure \ref{fig:anomalie_corruption_global}}.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.49\textwidth}
+\centering
+\includegraphics[width=\linewidth]{Images/profil/country/Finland/Finland_corruption_perception.png}
+\caption{Moyenne pour la Finlande.}
+\label{fig:anomalie_corruption_finland}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.49\textwidth}
+\centering
+\includegraphics[width=\linewidth]{Images/profil/global/mean_corruption_perception.png}
+\caption{Moyenne mondiale.}
+\label{fig:anomalie_corruption_global}
+\end{subfigure}
+\caption{Profils de la variable \texttt{corruption\_perception} en Finlande et dans le monde.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{nettoyage\_des\_données.ipynb}.}
+\label{fig:anomalies_perception_corruption}
+\end{figure}
+
+Des ruptures similaires apparaissent aussi sur certaines variables plus structurelles. \hyperref[fig:anomalies_globales]{La figure \ref{fig:anomalies_globales}} illustre, sur les moyennes mondiales, des variations abruptes du PIB par habitant, de l’espérance de vie en bonne santé et du soutien sociale, alors que ces indicateurs évoluent généralement de manière plus régulière à l’échelle agrégée.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.31\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_gdp_per_capita.png}
+  \caption{PIB par habitant}
+  \label{fig:anomalie_gdp_global}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.31\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_healthy_life_expectancy.png}
+  \caption{Espérance de vie en bonne santé}
+  \label{fig:anomalie_hle_global}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.31\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_social_support.png}
+  \caption{Soutien social}
+  \label{fig:anomalie_social_support_global}
+\end{subfigure}
+\caption{Exemples de moyennes mondiales présentant des ruptures temporelles inattendues.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{nettoyage\_des\_données.ipynb}.}
+\label{fig:anomalies_globales}
+\end{figure}
+
+Ces ruptures rendent les comparaisons temporelles moins fiables. Elles peuvent modifier la position relative des pays en ACP et influencer l’estimation des coefficients en régression. Pour sécuriser l’analyse longitudinale, certaines dimensions sont donc reconstruites à partir de sources externes documentées, tandis que les variables d’enquête du WHR sont conservées lorsqu’elles restent stables et cohérentes.
+
+\subsection{Nettoyage et harmonisation}
+
+L’objectif est d’obtenir des fichiers comparables entre années et exploitables pour l’analyse descriptive, l’ACP et la régression. Trois difficultés apparaissent dès l’import des fichiers annuels. D’abord, les colonnes ne sont pas parfaitement homogènes entre années, car certains intitulés changent ou n’apparaissent pas selon les millésimes. Ensuite, les pays ne sont pas présents chaque année, ce qui empêche une comparaison longitudinale directe si on ne contrôle pas ce point. Enfin, les noms de pays et certains noms de régions contiennent des incohérences, ce qui rend les jointures avec des sources externes instables si ces labels ne sont pas normalisés.
+La disponibilité des pays varie nettement dans le temps. \hyperref[fig:pays_par_annee]{La figure \ref{fig:pays_par_annee}} montre le nombre de pays disponibles dans les tables brutes par année. On observe une baisse progressive après 2019, avec un minimum en 2023, puis une légère remontée en 2024. Cette variabilité justifie la construction d’un panel équilibré en complément du panel complet.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{Images/pays_par_annee.png}
+\caption{Nombre de pays disponibles par année dans les fichiers Kaggle (2015 à 2024).}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figure générée dans le notebook \textit{nettoyage\_des\_données.ipynb}.}
+\label{fig:pays_par_annee}
+\end{figure}
+
+Le nettoyage s’organise autour de quatre opérations. Les tables annuelles sont importées, puis les colonnes d’intérêt sont renommées et alignées sur un schéma commun (mêmes variables, mêmes conventions de nommage). Les régions sont harmonisées pour éviter les doublons de catégories et permettre des regroupements cohérents dans les profils régionaux. Les noms de pays sont normalisés (variantes, changements officiels, doublons) afin d’assurer une correspondance stable entre années, et surtout de permettre des jointures fiables avec les sources externes utilisées ensuite. Enfin, la préparation aboutit à deux jeux de données complémentaires, construits pour répondre à deux besoins analytiques différents.
+Le panel complet conserve l’ensemble des pays disponibles après nettoyage et sélection des variables retenues pour le projet. Le panel équilibré retient uniquement les pays observés sur toutes les années de la période d’analyse. Il sert de base de référence pour les comparaisons longitudinales et pour l’ACP, afin d’éviter que des effets de composition (entrées ou sorties de pays) ne perturbent l’interprétation.
+Les fichiers produits et leur rôle sont résumés dans le tableau \ref{tab:outputs_clean}. Les effectifs correspondent à l’état courant des données préparées pour l’analyse 2015 à 2023.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Fichier produit} & \textbf{Rôle dans le projet} \\
+\midrule
+
+\makecell[tl]{\texttt{world\_happiness\_combined\_clean.csv}} &
+Panel complet (2015 à 2023). 152 pays au total, avec des effectifs variables selon l’année. \\
+
+\makecell[tl]{\texttt{world\_happiness\_combined\_decade\_clean.csv}} &
+Panel équilibré (2015 à 2023). 125 pays présents chaque année. Jeu de référence pour les analyses longitudinales. \\
+
+\makecell[tl]{\texttt{world\_happiness\_2015\_clean.csv}\\
+\texttt{world\_happiness\_2020\_clean.csv}\\
+\texttt{world\_happiness\_2023\_clean.csv}, etc.} &
+Fichiers annuels extraits du panel équilibré. Ils contiennent chacun 125 pays et servent aux ACP année par année. \\
+
+\bottomrule
+\end{tabularx}
+\caption{Jeux de données nettoyés produits par la chaîne de préparation.}
+\label{tab:outputs_clean}
+\end{table}
+
+
+\subsection{Reconstruction et ajout d’indicateurs externes}
+
+Cette partie décrit les variables reconstruites et les variables ajoutées à partir de sources externes.
+L’objectif est double.
+D’une part, remplacer certains indicateurs issus des tables Kaggle lorsque leur dynamique temporelle semble peu cohérente avec une évolution réelle.
+D’autre part, enrichir le jeu de données avec des variables socio-économiques, institutionnelles et environnementales, afin d’élargir les hypothèses testées dans l’ACP et la régression.
+
+\subsubsection{Remplacement de variables}
+
+L’indicateur économique présent dans la source Kaggle, PIB par habitant (\texttt{gdp\_per\_capita}) a été remplacé par un indicateur récupéré via les \textit{World Development Indicators} (Banque mondiale) \cite{wdi-gdp-ppp-2017}, puis transformé en logarithme.
+Cette transformation (variable \textit{gdp\_log}) permet de réduire l’effet des valeurs extrêmes et de rendre les écarts plus comparables dans l’ACP et la régression.
+La comparaison globale entre l’ancienne série et la série reconstruite est présentée dans \hyperref[fig:gdp_compare_global]{la figure \ref{fig:gdp_compare_global}}.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_gdp_per_capita.png}
+  \caption{Variable d’origine : \texttt{gdp\_per\_capita}.}
+  \label{fig:old_gdp_global}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_gdp_log.png}
+  \caption{Variable reconstruite : \texttt{gdp\_log}.}
+  \label{fig:new_gdp_global}
+\end{subfigure}
+\caption{Comparaison globale entre l’indicateur économique d’origine et l’indicateur reconstruit.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{nettoyage\_des\_données.ipynb}.}
+\label{fig:gdp_compare_global}
+\end{figure}
+
+La variable de perception de la corruption issue des tables Kaggle (\texttt{corruption\_perception}) a montré des ruptures temporelles marquées, visibles à la fois sur des profils nationaux et sur la moyenne mondiale.
+Pour limiter l’impact potentiel de ces ruptures sur l’ACP et la régression, une nouvelle variable institutionnelle a été intégrée. Il s’agit du \textit{Corruption Perceptions Index}, \texttt{cpi} \cite{ti-cpi-definition}, qui fournit une échelle standardisée (0 à 100) construite par Transparency International \cite{ti-cpi-method}. La comparaison est donnée dans \hyperref[fig:corr_compare_global]{la figure \ref{fig:corr_compare_global}}.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_corruption_perception.png}
+  \caption{Variable d’origine : \texttt{corruption\_perception}.}
+  \label{fig:old_corr_global}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_cpi.png}
+  \caption{Variable ajoutée : \texttt{cpi}.}
+  \label{fig:new_corr_global}
+\end{subfigure}
+\caption{Comparaison globale entre la variable de corruption d’origine et l’indicateur CPI.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{nettoyage\_des\_données.ipynb}.}
+\label{fig:corr_compare_global}
+\end{figure}
+
+\subsubsection{Ajout de nouvelles variables}
+
+En complément des variables issues du WHR, le projet ajoute plusieurs indicateurs extérieurs afin d’élargir le champ des facteurs testés dans l’ACP et la régression. L’objectif n’est pas de remplacer les scores d’enquête, mais d’introduire des variables plus proches de statistiques socio-économiques, institutionnelles et environnementales, avec des définitions explicites et une comparabilité temporelle plus stable. Ces indicateurs sont mobilisés comme déterminants potentiels du bien-être, car ils décrivent un contexte macroéconomique, institutionnel ou écologique dans lequel les populations vivent. Trois variables issues des \textit{World Development Indicators} (WDI, Banque mondiale) sont intégrées. Le taux de chômage total (\texttt{unemployment\_rate}) \cite{wdi-unemployment} mesure la part de la population active sans emploi, en pourcentage. Il est ajouté car un chômage élevé peut être associé à une fragilisation économique et sociale susceptible d’influencer l’évaluation de vie. La part de population en âge de travailler (\texttt{active\_population\_rate}) \cite{wdi-active} correspond ici à la proportion de la population âgée de 15 à 64 ans. Elle décrit une structure démographique et donne un ordre de grandeur du poids de la population potentiellement active, ce qui peut modifier la pression sur le marché du travail et la dynamique économique. La part de population urbaine (\texttt{urban\_population\_rate}) \cite{wdi-urban} est la proportion de la population vivant en zone urbaine. Elle est intégrée car le degré d’urbanisation influence l’accès aux services et aux opportunités, mais peut aussi être associé à des contraintes (coût de la vie, pollution).
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.32\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_unemployment_rate.png}
+  \caption{\texttt{unemployment\_rate}.}
+  \label{fig:unemployment_rate}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.32\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_active_population_rate.png}
+  \caption{\texttt{active\_population\_rate}.}
+  \label{fig:active_population_rate}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.32\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_urban_population_rate.png}
+  \caption{\texttt{urban\_population\_rate}.}
+  \label{fig:urban_population_rate}
+\end{subfigure}
+\caption{Profils mondiaux des nouvelles variables socio-économiques (2015 à 2023).}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{nettoyage\_des\_données.ipynb}. Données : WDI (Banque mondiale).}
+\label{fig:socio_eco}
+\end{figure}
+
+Deux variables institutionnelles supplémentaires sont ajoutées à partir des WDI (Banque mondiale).
+Elles correspondent à des estimations de gouvernance. L’indicateur \texttt{voice\_accountability} \cite{wdi-voice} (voix et responsabilité) décrit la possibilité de participation citoyenne, ainsi que des aspects liés aux libertés publiques et à la redevabilité des autorités. Il est ajouté pour représenter un contexte où les individus peuvent plus ou moins influencer la vie publique. L’indicateur \texttt{government\_effectiveness} \cite{wdi-gov} (efficacité gouvernementale) reflète la capacité de l’État à fournir des services publics de qualité et à mettre en oeuvre des politiques de manière crédible. Il est introduit car un État plus efficace peut être associé à une meilleure qualité de vie via les infrastructures, l’éducation, la santé et la stabilité administrative.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_voice_accountability.png}
+  \caption{\texttt{voice\_accountability}.}
+  \label{fig:voice_accountability}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_government_effectiveness.png}
+  \caption{\texttt{government\_effectiveness}.}
+  \label{fig:government_effectiveness}
+\end{subfigure}
+\caption{Profils mondiaux des nouvelles variables institutionnelles (2015 à 2023).}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{nettoyage\_des\_données.ipynb}. Données : WDI (Banque mondiale).}
+\label{fig:institu}
+\end{figure}
+
+Deux variables environnementales sont ajoutées à partir d’\textit{Our World in Data} (OWID). Les émissions de CO\textsubscript{2} par habitant (\texttt{co2\_emissions\_per\_capita}) \cite{owid-co2-per-capita} correspondent aux émissions annuelles rapportées à la population. Cette variable est utilisée comme ordre de grandeur d’empreinte carbone moyenne, et indirectement de certains aspects du modèle de production et de consommation. La variable \texttt{temperature\_change\_from\_ghg} décrit un indicateur de changement de température attribué aux gaz à effet de serre. Elle sert à introduire une dimension liée aux pressions climatiques, distincte du niveau d’émissions.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_co2_emissions_per_capita.png}
+  \caption{\texttt{co2\_per\_capita}.}
+  \label{fig:co2_per_capita}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/profil/global/mean_temperature_change_from_ghg.png}
+  \caption{\texttt{temperature\_change\_from\_ghg}.}
+  \label{fig:temp_change_ghg}
+\end{subfigure}
+\caption{Profils mondiaux des nouvelles variables environnementales (2015 à 2023).}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{nettoyage\_des\_données.ipynb}. Données : Our World in Data (OWID) \cite{owid-co2-per-capita}.}
+\label{fig:envi}
+\end{figure}
+
+\subsubsection{Variables utilisées dans le jeu de données final}
+
+Le tableau \ref{tab:variables_finales} récapitule les variables utilisées après reconstruction et enrichissement. 
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.33\textwidth} X}
+\toprule
+\textbf{Variable} & \textbf{Description} \\
+\midrule
+
+\makecell[tl]{Score de bonheur\\{\footnotesize (\texttt{happiness\_score})}} &
+Moyenne nationale de l’évaluation de vie sur l’échelle de Cantril (0 à 10). \\
+
+\makecell[tl]{Espérance de vie en bonne santé\\{\footnotesize (\texttt{healthy\_life\_expectancy})}} &
+Indicateur de santé basé sur des sources internationales mobilisées par le WHR, avec millésimes parfois décalés. \\
+
+\makecell[tl]{Liberté de choix\\{\footnotesize (\texttt{freedom\_to\_choose})}} &
+Score issu d’une question d’enquête sur la satisfaction vis-à-vis de la liberté de choix. \\
+
+\makecell[tl]{Générosité\\{\footnotesize (\texttt{generosity})}} &
+Score issu d’une question d’enquête sur le fait d’avoir donné à une association récemment. \\
+
+\makecell[tl]{PIB par habitant (log)\\{\footnotesize (\texttt{gdp\_log})}} &
+Indicateur économique externe basé sur le PIB par habitant en PPA (base 2017) puis transformé en log. \\
+
+\makecell[tl]{Indice de corruption (CPI)\\{\footnotesize (\texttt{cpi})}} &
+Indice institutionnel externe standardisé (0 à 100), utilisé ici pour remplacer la variable de corruption d’origine. \\
+
+\makecell[tl]{Taux de chômage\\{\footnotesize (\texttt{unemployment\_rate})}} &
+Part de la population active au chômage. Variable socio-économique ajoutée. \\
+
+\makecell[tl]{Taux d’activité\\{\footnotesize (\texttt{active\_population\_rate})}} &
+Part de la population en âge de travailler active sur le marché du travail. Variable socio-économique ajoutée. \\
+
+\makecell[tl]{Part de population urbaine\\{\footnotesize (\texttt{urban\_population\_rate})}} &
+Part de la population vivant en zone urbaine. Interprétation prudente car définitions nationales. \\
+
+\makecell[tl]{CO\textsubscript{2} par habitant\\{\footnotesize (\texttt{co2\_per\_capita})}} &
+Émissions annuelles de CO\textsubscript{2} rapportées à la population. Variable environnementale ajoutée. \\
+
+\makecell[tl]{Température liée aux GES\\{\footnotesize (\texttt{temperature\_change\_from\_ghg})}} &
+Indicateur environnemental décrivant une contribution des gaz à effet de serre au changement de température. \\
+
+\makecell[tl]{Voix et responsabilité\\{\footnotesize (\texttt{voice\_accountability})}} &
+Indicateur institutionnel ajouté décrivant participation, libertés et responsabilité politique. \\
+
+\makecell[tl]{Efficacité gouvernementale\\{\footnotesize (\texttt{government\_effectiveness})}} &
+Indicateur institutionnel ajouté sur la qualité des services publics et des politiques. \\
+
+\bottomrule
+\end{tabularx}
+\caption{Variables utilisées dans le jeu de données après nettoyage, reconstruction et ajout d’indicateurs externes.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : variables WHR d’après les définitions du WHR \cite{whr-about,whr-faq}. Indicateurs externes : construits dans \textit{nettoyage\_des\_données.ipynb} à partir de TI \cite{ti-cpi-definition}, WDI \cite{wdi-gdp-ppp-2017, wdi-unemployment, wdi-active, wdi-urban, wdi-voice, wdi-gov}, et OWID \cite{owid-co2-per-capita}.}
+\label{tab:variables_finales}
+\end{table}
+
+Les variables d’origine remplacées (PIB par habitant, perception de la corruption) ne figurent plus dans cette liste, car elles ne sont pas retenues pour les analyses principales. La variable \texttt{social\_support} est supprimé car elle possédait un pic anormale en 2018. De plus, aucune variable de subtitue n'a été trouvé pour la remplacer.
+Une précaution importante concerne la nature des mesures des variables originelles. Plusieurs variables du WHR (soutien social, liberté, générosité, corruption dans les tables d’origine) sont issues de questions posées aux habitants et décrivent une perception déclarée. À l’inverse, les variables ajoutées ou reconstruites reposent sur des mesures statistiques et des méthodes externes au WHR. Ces nouvelles variables sont traitées comme des facteurs explicatifs possibles du bien-être, et non comme des équivalents directs des scores issus des enquêtes.
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 4. ACP 2015 et 2023
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Analyse en Composantes Principales}
+
+L’Analyse en Composantes Principales (ACP) sert ici à résumer l’information contenue dans l’ensemble des variables explicatives, puis à visualiser les pays dans un espace de faible dimension.
+Comme les variables sont exprimées dans des unités différentes, elles sont standardisées avant l’ACP.
+L’objectif est double.
+D’abord, identifier des dimensions communes qui structurent les différences entre pays.
+Ensuite, vérifier si ces dimensions restent stables entre 2015 et 2023.
+
+\subsection{Choix du nombre d’axes}
+
+Les valeurs propres montrent que le plan (1,2) capture une part importante de l’information dans les deux années.
+En 2015, les deux premiers axes expliquent 64.67 \% de l’inertie totale (Dim 1 : 49.13 \%, Dim 2 : 15.54 \%).
+En 2023, ils expliquent 61.21 \% (Dim 1 : 47.17 \%, Dim 2 : 14.04 \%).
+Dans les deux cas, le critère de Kaiser conduit à retenir 3 composantes.
+Le plan (1,2) reste donc pertinent pour une lecture globale, avec un axe 3 qui peut compléter certaines interprétations en 2023.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/acp/eboulis_valeurs_propres_2015.png}
+  \caption{Éboulis des valeurs propres (2015).}
+  \label{fig:eboulis_2015}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/acp/eboulis_valeurs_propres_2023.png}
+  \caption{Éboulis des valeurs propres (2023).}
+  \label{fig:eboulis_2023}
+\end{subfigure}
+
+\vspace{0.25cm}
+
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/acp/inertie_cumulee_2015.png}
+  \caption{Inertie cumulée (2015).}
+  \label{fig:inertie_2015}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/acp/inertie_cumulee_2023.png}
+  \caption{Inertie cumulée (2023).}
+  \label{fig:inertie_2023}
+\end{subfigure}
+
+\caption{Choix du nombre d’axes, comparaison 2015 et 2023.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans les notebooks ACP (sorties 2015 et 2023).}
+\label{fig:choix_axes_comparaison}
+\end{figure}
+
+\subsection{Structure des corrélations et interprétation des axes}
+
+Avant d’interpréter les axes, la matrice de corrélation permet de repérer les blocs de variables qui évoluent ensemble.
+Dans les deux années, on observe un noyau très corrélé lié au niveau de développement et à la qualité institutionnelle.
+On observe aussi une dimension plus spécifique portée par le chômage, opposée à des variables plus sociales (liberté de choix et générosité), surtout visible sur l’axe 2.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/correlation/matrice_correlation_2015.png}
+  \caption{Matrice de corrélation (2015).}
+  \label{fig:corr_2015}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/correlation/matrice_correlation_2023.png}
+  \caption{Matrice de corrélation (2023).}
+  \label{fig:corr_2023}
+\end{subfigure}
+\caption{Structure des corrélations, comparaison 2015 et 2023.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans les notebooks ACP (sorties 2015 et 2023).}
+\label{fig:corr_compare}
+\end{figure}
+
+Le cercle des corrélations synthétise ensuite l’interprétation.
+Sur \hyperref[fig:cercle_compare]{la figure \ref{fig:cercle_compare}}, l’axe 1 correspond principalement à une dimension de développement et de qualité institutionnelle.
+L’axe 2 correspond davantage à une opposition entre chômage d’un côté, et liberté de choix et générosité de l’autre.
+Entre 2015 et 2023, l’interprétation globale est stable, même si certaines variables (comme la générosité) apparaissent plus indépendantes en 2023.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/acp/cercle_correlations_2015.png}
+  \caption{Cercle des corrélations (2015).}
+  \label{fig:cercle_2015}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/acp/cercle_correlations_2023.png}
+  \caption{Cercle des corrélations (2023).}
+  \label{fig:cercle_2023}
+\end{subfigure}
+\caption{Interprétation des axes via les corrélations variables-axes.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans les notebooks ACP (sorties 2015 et 2023).}
+\label{fig:cercle_compare}
+\end{figure}
+
+\subsection{Projection des pays et stabilité des structures}
+
+La projection des pays sur le plan (1,2) permet de visualiser les oppositions principales entre territoires.
+La version colorée par région facilite la lecture géographique et permet de vérifier si des regroupements régionaux apparaissent de manière cohérente.
+Sur \hyperref[fig:plan_compare]{la figure \ref{fig:plan_compare}}, la structure globale est comparable entre 2015 et 2023, ce qui renforce l’idée que les axes capturent des dimensions relativement stables.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/acp/plan_factoriel_pays_regions_12_2015.png}
+  \caption{Pays colorés par région (2015).}
+  \label{fig:plan_regions_2015}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/acp/plan_factoriel_pays_regions_12_2023.png}
+  \caption{Pays colorés par région (2023).}
+  \label{fig:plan_regions_2023}
+\end{subfigure}
+\caption{Projection des pays sur le plan factoriel (1,2), comparaison 2015 et 2023.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans les notebooks ACP (sorties 2015 et 2023).}
+\label{fig:plan_compare}
+\end{figure}
+
+Pour éviter de sur-interpréter des positions peu fiables, on examine la qualité de représentation (cosinus carrés).
+Sur \hyperref[fig:cos2_compare]{la figure \ref{fig:cos2_compare}}, les graphiques présentent les pays les mieux représentés sur le plan (1,2).
+Ils indiquent quels pays peuvent être interprétés de manière robuste sur la carte factorielle.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/acp/cos2_top20_pays_plan_12_2015.png}
+  \caption{Top 20 cos\textsuperscript{2} sur le plan (1,2), 2015.}
+  \label{fig:cos2_2015}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/acp/cos2_top20_pays_plan_12_2023.png}
+  \caption{Top 20 cos\textsuperscript{2} sur le plan (1,2), 2023.}
+  \label{fig:cos2_2023}
+\end{subfigure}
+\caption{Qualité de représentation des pays sur le plan (1,2).}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans les notebooks ACP (sorties 2015 et 2023).}
+\label{fig:cos2_compare}
+\end{figure}
+
+\subsection{Analyse comparative des résultats des ACP}
+
+La comparaison des ACP réalisées sur 2015 et 2023 montre une structure factorielle globalement stable, avec quelques évolutions notables dans le rôle de certaines variables.
+Cette stabilité apparaît d’abord dans la part d’inertie captée par le plan (1,2), qui reste du même ordre de grandeur (64.67 \% en 2015 contre 61.21 \% en 2023), ce qui rend la comparaison visuelle cohérente.
+
+\subsubsection{Interprétation de l'Axe 1}
+
+Dans les deux années, la première composante est dominée par les mêmes variables et porte la même interprétation.
+\hyperref[tab:dim1_contrib_compare]{Le tableau \ref{tab:dim1_contrib_compare}} montre que les principales contributrices à Dim 1 restent les mêmes, avec des contributions très proches entre 2015 et 2023.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.15}
+
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}X r}
+\toprule
+\multicolumn{2}{c}{\textbf{Dim 1 (2015)}} \\
+\midrule
+\texttt{gdp\_log} & 15.35 \% \\
+\texttt{government\_effectiveness} & 15.12 \% \\
+\texttt{life\_expectancy} & 13.74 \% \\
+\texttt{cpi} & 13.28 \% \\
+\bottomrule
+\end{tabularx}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}X r}
+\toprule
+\multicolumn{2}{c}{\textbf{Dim 1 (2023)}} \\
+\midrule
+\texttt{gdp\_log} & 15.86 \% \\
+\texttt{government\_effectiveness} & 14.89 \% \\
+\texttt{life\_expectancy} & 14.13 \% \\
+\texttt{cpi} & 13.19 \% \\
+\bottomrule
+\end{tabularx}
+\end{minipage}
+
+\caption{Contributions (\%) des principales variables sur Dim 1, comparaison 2015 à 2023.}
+\label{tab:dim1_contrib_compare}
+\end{table}
+
+
+Cela signifie que, entre 2015 et 2023, l’opposition principale entre pays reste structurée par un gradient commun : niveau économique, santé et qualité institutionnelle.
+Même si des pays peuvent changer de position relative, la logique de Dim 1 reste stable et ne se réorganise pas.
+
+\subsubsection{Interprétation de l'Axe 2}
+
+Le deuxième axe garde la même lecture générale en 2015 et en 2023, il oppose le chômage à des variables plus « sociales ».
+\hyperref[tab:dim2_contrib_compare]{Le tableau \ref{tab:dim2_contrib_compare}} montre toutefois que l’équilibre interne évolue, avec un poids plus fort du chômage et de la générosité en 2023, et un poids plus faible de la liberté de choix.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.15}
+
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}X r}
+\toprule
+\multicolumn{2}{c}{\textbf{Dim 2 (2015)}} \\
+\midrule
+\texttt{unemployment\_rate} & 33.41 \% \\
+\texttt{generosity} & 28.83 \% \\
+\texttt{freedom\_to\_choose} & 25.48 \% \\
+\bottomrule
+\end{tabularx}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}X r}
+\toprule
+\multicolumn{2}{c}{\textbf{Dim 2 (2023)}} \\
+\midrule
+\texttt{unemployment\_rate} & 39.05 \% \\
+\texttt{generosity} & 33.98 \% \\
+\texttt{freedom\_to\_choose} & 15.26 \% \\
+\bottomrule
+\end{tabularx}
+\end{minipage}
+
+\caption{Contributions (\%) des principales variables sur Dim 2, comparaison 2015 à 2023.}
+\label{tab:dim2_contrib_compare}
+\end{table}
+
+Cela suggère qu’en 2023, la variabilité portée par Dim 2 est encore plus concentrée sur l’opposition « chômage contre générosité », et relativement moins sur la liberté de choix, même si cette dernière reste structurante.
+Les autres variables ont un poids secondaire sur Dim 2 dans les deux années, ce qui confirme que cet axe apporte une information plus ciblée que Dim 1.
+
+\subsubsection{Observations supplémentaires}
+
+Un point marquant de la comparaison concerne \texttt{generosity}.
+En 2015, elle est faiblement mais plutôt positivement reliée au bloc de développement.
+En 2023, elle devient beaucoup plus indépendante des indicateurs de développement et de qualité institutionnelle, avec des corrélations proches de 0 ou légèrement négatives avec \texttt{cpi}, \texttt{life\_expectancy} et \texttt{gdp\_log}.
+Cette évolution est cohérente avec sa position sur le cercle des corrélations : elle apparaît davantage comme une dimension spécifique, moins alignée sur le gradient économique-institutionnel.
+Pour l’environnement, \texttt{co2\_emissions\_per\_capita} reste associée positivement au niveau de développement, mais ce lien est un peu moins fort en 2023 qu’en 2015 (par exemple avec \texttt{gdp\_log}).
+À l’inverse, \texttt{temperature\_change\_from\_ghg} reste très faiblement corrélée aux autres variables dans les deux années, ce qui indique qu’elle capture une information largement indépendante de la structure socio-économique et institutionnelle décrite par Dim 1.
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 5. Régression linéaire
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Régression linéaire}
+
+L’objectif de cette partie est d’expliquer le score de bonheur (\texttt{happiness\_score}) à partir des variables explicatives, puis de comparer la stabilité des relations entre 2015 et 2023.
+La démarche est identique sur les deux années pour rendre la comparaison cohérente.
+On suit quatre étapes.
+D’abord, une lecture des corrélations et des risques de multicolinéarité.
+Ensuite, une comparaison de la performance prédictive de plusieurs modèles via validation croisée.
+Puis, une lecture des coefficients estimés (bruts et standardisés) pour comparer l’importance relative des variables.
+Enfin, des diagnostics et une analyse de sensibilité aux points influents (distance de Cook).
+
+\subsection{Corrélations et multicolinéarité}
+
+Avant estimation, la structure des corrélations permet de repérer deux éléments.
+D’une part, quelles variables sont associées au score de bonheur.
+D’autre part, quels groupes de variables sont fortement corrélés entre eux, ce qui peut rendre les coefficients instables et difficiles à interpréter variable par variable.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.34\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/corr_heatmap_2015.png}
+  \caption{Corrélations (2015).}
+  \label{fig:corr_2015_reg}
+\end{subfigure}
+\vspace{0.3}
+\begin{subfigure}[b]{0.34\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/corr_heatmap_2023.png}
+  \caption{Corrélations (2023).}
+  \label{fig:corr_2023_reg}
+\end{subfigure}
+\caption{Structure des corrélations avant régression, comparaison 2015 et 2023.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{Regression\_lineaire.qmd}.}
+\label{fig:corr_reg_compare}
+\end{figure}
+
+\hyperref[fig:corr_reg_compare]{La figure \ref{fig:corr_reg_compare}} montre une structure globalement stable entre 2015 et 2023.
+Dans les deux années, le score de bonheur est corrélé positivement avec le niveau de vie (\texttt{gdp\_log}) et la liberté de choix (\texttt{freedom\_to\_choose}), et négativement avec le chômage (\texttt{unemployment\_rate}).
+On observe aussi un bloc de variables corrélées entre elles, notamment \texttt{gdp\_log}, \texttt{government\_effectiveness}, \texttt{cpi} et \texttt{life\_expectancy}.
+Cette structure implique un risque de multicolinéarité déjà présent en 2015 et toujours visible en 2023.
+Cela justifie une interprétation prudente des coefficients, et motive l’usage de modèles alternatifs ou d’analyses de robustesse.
+
+\subsection{Performance prédictive}
+
+Pour évaluer la capacité prédictive, plusieurs modèles sont comparés avec une validation croisée.
+Le critère utilisé est le RMSE moyen, avec un écart-type représenté pour visualiser la variabilité selon les folds.
+Cette comparaison sert surtout à vérifier si des régularisations ou une sélection de variables changent réellement la qualité de prédiction.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\linewidth]{Images/regression/comparaison_globale_modeles_rmse.png}
+\caption{Comparaison des modèles par RMSE moyen en validation croisée (2015 et 2023).}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figure générée dans le notebook \textit{Regression\_lineaire.qmd}.}
+\label{fig:rmse_models_compare}
+\end{figure}
+
+\hyperref[fig:rmse_models_compare]{La figure \ref{fig:rmse_models_compare}} indique que les performances sont proches entre modèles pour une année donnée.
+Les barres d’erreur se recouvrent largement, ce qui suggère que les écarts de RMSE entre méthodes (complet, régularisations, StepAIC, modèle réduit) sont modestes.
+On observe aussi que les RMSE sont globalement plus faibles en 2023 qu’en 2015, ce qui suggère une légère amélioration de la prédiction sur la coupe 2023, ou une structure plus simple à capturer par les variables disponibles.
+Cette lecture doit rester prudente car elle dépend de l’échantillon de pays et de la variabilité inter-pays sur chaque année.
+
+\subsection{Qualité d’ajustement en échantillon}
+
+En complément du RMSE en validation croisée, on rapporte le pouvoir explicatif en échantillon via le coefficient de détermination $R^2$ et sa version ajustée ($R^2$ ajusté), qui pénalise l’ajout de variables.
+Sur le modèle complet, on obtient en 2015 un $R^2 = 0{,}7713$ et un $R^2$ ajusté $= 0{,}7468$.
+En 2023, le modèle complet atteint un $R^2 = 0{,}8101$ et un $R^2$ ajusté $= 0{,}7898$.
+Ces valeurs indiquent un pouvoir explicatif légèrement plus élevé en 2023, mais elles décrivent l’ajustement sur l’échantillon observé et ne remplacent pas l’évaluation hors échantillon.
+Sur le modèle réduit (sans \texttt{generosity}), les résultats restent très proches.
+En 2015, $R^2 = 0{,}7701$ et $R^2$ ajusté $= 0{,}7477$.
+En 2023, $R^2 = 0{,}8079$ et $R^2$ ajusté $= 0{,}7892$.
+Cela confirme que retirer \texttt{generosity} ne dégrade pas l’ajustement et va dans le sens d’un modèle plus parcimonieux.
+
+\subsection{Comparaison des coefficients}
+
+Comparer les coefficients bruts permet de vérifier le sens des associations, mais la comparaison directe de leur amplitude est limitée car les variables n’ont pas la même unité.
+À l’inverse, les coefficients standardisés permettent de comparer l’importance relative des variables, car ils expriment les effets en écart-types.
+Les deux lectures sont complémentaires et doivent être interprétées ensemble.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/comparaison_coefficients_2015_2023.png}
+  \caption{Coefficients estimés (bruts), modèles réduits.}
+  \label{fig:coef_bruts_compare}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/comparaison_coefficients_standardises_2015_2023.png}
+  \caption{Coefficients standardisés.}
+  \label{fig:coef_std_compare}
+\end{subfigure}
+\caption{Comparaison des coefficients 2015 / 2023 selon deux lectures : brute et standardisée.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{Regression\_lineaire.qmd}.}
+\label{fig:coef_compare_double}
+\end{figure}
+
+À partir de \hyperref[fig:coef_compare_double]{la figure \ref{fig:coef_compare_double}}, on peut distinguer deux niveaux de lecture.
+D’abord, sur les coefficients bruts, on retrouve des effets cohérents en signe entre 2015 et 2023, notamment un effet positif du niveau de vie (\texttt{gdp\_log}) et de la liberté de choix (\texttt{freedom\_to\_choose}), et un effet négatif du chômage (\texttt{unemployment\_rate}).
+Cependant, l’amplitude des coefficients bruts ne doit pas être sur-interprétée car elle dépend directement de l’échelle de mesure de chaque variable.
+Cela est particulièrement visible pour certaines variables dont les unités ou la variabilité sont très différentes des autres.
+Ensuite, la lecture standardisée permet de comparer ce qui pèse réellement dans l’explication du score.
+Sur cette lecture, \texttt{gdp\_log} et \texttt{freedom\_to\_choose} ressortent comme des contributeurs positifs importants dans les deux années.
+Le chômage conserve un effet négatif, avec une intensité qui peut évoluer entre 2015 et 2023, mais en gardant le même sens.
+À l’inverse, certaines variables institutionnelles ou contextuelles apparaissent plus instables, avec des effets plus faibles ou plus variables d’une année à l’autre.
+Ce type d’instabilité est compatible avec la multicolinéarité observée plus haut, et avec la présence de points influents, discutée dans la suite via la distance de Cook.
+
+
+\subsection{Diagnostics}
+
+Même si l’ajustement global est correct, les diagnostics servent à vérifier si les hypothèses du modèle linéaire sont raisonnables.
+On regarde la linéarité, l’homoscédasticité, la normalité des résidus, et la présence de points influents.
+
+\subsubsection{Résidus vs ajustés}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/diag_residus_vs_ajustes_2015.png}
+  \caption{Résidus vs ajustés (2015).}
+  \label{fig:diag_resid_fit_2015}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/diag_residus_vs_ajustes_2023.png}
+  \caption{Résidus vs ajustés (2023).}
+  \label{fig:diag_resid_fit_2023}
+\end{subfigure}
+\caption{Diagnostic de linéarité et dispersion des résidus (2015 et 2023).}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{Regression\_lineaire.qmd}.}
+\label{fig:diag_resid_fit_compare}
+\end{figure}
+
+\hyperref[fig:diag_resid_fit_compare]{La figure \ref{fig:diag_resid_fit_compare}} suggère une relation globalement compatible avec une forme linéaire dans les deux années, car les résidus restent centrés autour de zéro sans structure très marquée.
+On observe toutefois quelques résidus extrêmes, plus visibles en 2023, ce qui peut fragiliser l’inférence.
+La dispersion semble aussi légèrement moins homogène en 2023, ce qui motive l’examen du graphe scale-location.
+
+\subsubsection{Normalité des résidus}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/diag_qqplot_2015.png}
+  \caption{QQ-plot (2015).}
+  \label{fig:diag_qq_2015}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/diag_qqplot_2023.png}
+  \caption{QQ-plot (2023).}
+  \label{fig:diag_qq_2023}
+\end{subfigure}
+\caption{Diagnostic de normalité des résidus (2015 et 2023).}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{Regression\_lineaire.qmd}.}
+\label{fig:diag_qq_compare}
+\end{figure}
+
+\hyperref[fig:diag_qq_compare]{La figure \ref{fig:diag_qq_compare}} montre une bonne adéquation au centre de la distribution, mais des écarts plus importants dans les extrémités.
+Ces écarts sont plus marqués en 2023, avec des résidus extrêmes qui s’éloignent davantage de la droite théorique.
+Cela suggère des queues plus lourdes en 2023.
+Dans ce contexte, les tests de significativité doivent être interprétés avec prudence.
+
+\subsubsection{Scale-location}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/diag_scale_location_2015.png}
+  \caption{Scale-location (2015).}
+  \label{fig:diag_scale_2015}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/diag_scale_location_2023.png}
+  \caption{Scale-location (2023).}
+  \label{fig:diag_scale_2023}
+\end{subfigure}
+\caption{Diagnostic d’homoscédasticité (2015 et 2023).}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{Regression\_lineaire.qmd}.}
+\label{fig:diag_scale_compare}
+\end{figure}
+
+\hyperref[fig:diag_scale_compare]{La figure \ref{fig:diag_scale_compare}} est globalement plus proche d’une tendance plate en 2015.
+Cela va plutôt dans le sens d’une variance des résidus relativement stable.
+En 2023, la tendance est plus descendante, ce qui indique que la dispersion des résidus est plus forte pour certaines zones des valeurs ajustées.
+Ce signal est compatible avec une hétéroscédasticité modérée en 2023.
+
+\subsection{Points influents}
+
+\subsubsection{Distance de Cook}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/cooks_2015.png}
+  \caption{Distance de Cook (2015).}
+  \label{fig:cooks_2015}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/cooks_2023.png}
+  \caption{Distance de Cook (2023).}
+  \label{fig:cooks_2023}
+\end{subfigure}
+\caption{Influence des observations via la distance de Cook (2015 et 2023).}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{Regression\_lineaire.qmd}.}
+\label{fig:cooks_compare}
+\end{figure}
+
+\hyperref[fig:cooks_compare]{La figure \ref{fig:cooks_compare}} montre une différence nette entre les années.
+En 2015, les distances de Cook restent relativement faibles et plus réparties.
+En 2023, quelques observations concentrent une influence beaucoup plus forte.
+Cela signifie que certains pays peuvent peser davantage sur l’estimation des coefficients en 2023.
+Dans ce cas, une analyse de sensibilité est nécessaire.
+
+\subsubsection{Sensibilité des coefficients}
+
+Pour vérifier la robustesse, on compare les coefficients estimés sur le modèle complet, puis sur un modèle ré-estimé après retrait des observations les plus influentes (top 5 selon Cook).
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/stabilite_coef_2015.png}
+  \caption{Stabilité des coefficients (2015).}
+  \label{fig:stabilite_2015}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Images/regression/stabilite_coef_2023.png}
+  \caption{Stabilité des coefficients (2023).}
+  \label{fig:stabilite_2023}
+\end{subfigure}
+\caption{Stabilité des coefficients après retrait des observations les plus influentes.}
+\vspace{-0.45cm}
+\caption*{\footnotesize Source : figures générées dans le notebook \textit{Regression\_lineaire.qmd}.}
+\label{fig:stabilite_compare}
+\end{figure}
+
+\hyperref[fig:stabilite_compare]{La figure \ref{fig:stabilite_compare}} indique que, en 2015, les coefficients varient mais restent globalement cohérents en signe et en ordre de grandeur.
+Cela suggère une estimation relativement robuste, même si certaines variables sensibles peuvent se déplacer.
+En 2023, la sensibilité est plus visible.
+Le retrait des observations les plus influentes modifie davantage certains coefficients, et peut même faire évoluer l’importance relative de certaines variables.
+Ce résultat est cohérent avec la distance de Cook plus élevée en 2023.
+Il implique que l’interprétation causale ou structurelle doit être prudente, et qu’une analyse complémentaire des pays influents serait utile, par exemple en identifiant ces pays et en expliquant pourquoi ils sont atypiques.
+
+\subsection{Analyse comparative des résultats des régressions linéaires}
+
+La comparaison met en évidence trois résultats principaux.
+D’abord, les relations globales sont stables entre 2015 et 2023.
+Le score de bonheur reste fortement associé au niveau de vie (\texttt{gdp\_log}) et à la liberté de choix (\texttt{freedom\_to\_choose}), tandis que le chômage conserve une association négative.
+Cette stabilité apparaît à la fois dans \hyperref[fig:corr_reg_compare]{la figure \ref{fig:corr_reg_compare}} et dans \hyperref[fig:coef_compare_double]{la figure \ref{fig:coef_compare_double}}, même si certaines variables secondaires restent difficiles à isoler à cause de la multicolinéarité.
+Ensuite, du point de vue prédictif, les performances des modèles testés sont proches.
+\hyperref[fig:rmse_models_compare]{La figure \ref{fig:rmse_models_compare}} suggère que les différences entre approches (modèle complet, régularisations, StepAIC, modèle réduit) restent modestes à l’intérieur d’une année.
+Les RMSE sont globalement plus faibles en 2023, ce qui peut indiquer une structure plus facilement captée par les variables disponibles sur cette coupe, tout en restant dépendant de l’échantillon de pays observés.
+Enfin, l’analyse des diagnostics indique que les résultats de 2023 sont plus sensibles à quelques observations influentes.
+Les écarts aux hypothèses sont modérés mais plus visibles en 2023, notamment dans \hyperref[fig:diag_qq_compare]{la figure \ref{fig:diag_qq_compare}} et \hyperref[fig:diag_scale_compare]{la figure \ref{fig:diag_scale_compare}}.
+Surtout, \hyperref[fig:cooks_compare]{la figure \ref{fig:cooks_compare}} montre une concentration plus forte de l’influence sur un petit nombre de pays, ce qui se répercute sur la stabilité des coefficients dans \hyperref[fig:stabilite_compare]{la figure \ref{fig:stabilite_compare}}.
+En conséquence, la régression linéaire est pertinente comme outil descriptif et comparatif, mais l’interprétation des effets fins doit rester prudente en 2023, et gagnerait à être complétée par une identification explicite des pays influents et par des tests de robustesse.
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 6. Perspectives et continuité du projet
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Perspectives et continuité du projet}
+
+Le travail présenté dans ce rapport constitue une première étape d’analyse descriptive et explicative des déterminants du bonheur.
+Le semestre suivant sera consacré à un prolongement méthodologique du projet, avec un objectif davantage orienté vers la prédiction et la structuration des profils de pays.
+
+\subsection{Vers des modèles prédictifs du score de bonheur}
+
+Une première perspective naturelle consiste à développer des modèles prédictifs du score de bonheur.
+Contrairement aux régressions linéaires utilisées ici à des fins principalement interprétatives, l’objectif sera d’optimiser la capacité de prédiction hors échantillon.
+Plusieurs approches pourront être explorées, comme des modèles d’ensemble ou des méthodes non linéaires, afin de capturer d’éventuelles relations complexes entre les variables socio-économiques, institutionnelles et environnementales.
+La performance des modèles sera évaluée à l’aide de protocoles de validation croisée et de métriques adaptées, en comparaison avec les modèles linéaires étudiés dans ce rapport.
+Ce travail permettra également de mieux identifier les limites des modèles linéaires et de quantifier le gain réel apporté par des méthodes plus flexibles.
+
+\subsection{Structuration des pays par des méthodes de clustering}
+
+Une seconde piste de prolongement concerne la mise en œuvre de méthodes de clustering afin de regrouper les pays selon leurs profils de développement et de bien-être.
+À partir des variables explicatives déjà harmonisées, ou des axes issus de l’analyse en composantes principales, il sera possible d’identifier des groupes de pays présentant des caractéristiques similaires.
+Ces clusters pourront être comparés en termes de niveau de bonheur, de trajectoires temporelles et de structures socio-économiques.
+Cette approche permettra de dépasser une lecture purement individuelle des pays et d’introduire une dimension typologique, complémentaire aux analyses précédentes.
+Elle pourra également être utilisée pour analyser la stabilité des groupes dans le temps, ou l’éventuelle transition de certains pays d’un cluster à un autre sur la période étudiée.
+
+Ces perspectives s’inscrivent dans une continuité directe du travail réalisé et visent à enrichir l’analyse du bonheur à l’échelle internationale, tant du point de vue explicatif que prédictif.
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 7. Conclusion
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+
+Ce mémoire de mi-parcours avait pour objectif d’analyser les déterminants du score de bonheur issu du \textit{World Happiness Report} entre 2015 et 2023, en s’appuyant sur une préparation rigoureuse des données et sur des méthodes statistiques multivariées et explicatives. Une attention particulière a été portée à l’harmonisation des sources et à la comparabilité temporelle des indicateurs, condition nécessaire à toute analyse longitudinale fiable.
+Les analyses en composantes principales montrent une structure factorielle globalement stable entre 2015 et 2023. Le premier axe reste dominé par un gradient de développement économique, de santé et de qualité institutionnelle, tandis que le second axe oppose principalement le chômage à des dimensions plus sociales. Ces résultats suggèrent que, malgré des évolutions conjoncturelles, les grandes dimensions structurant les différences de bien-être entre pays demeurent comparables dans le temps.
+La régression linéaire confirme l’importance du niveau de vie, de la liberté de choix et du chômage dans l’explication du score de bonheur. Toutefois, la présence de multicolinéarité et de points influents, en particulier en 2023, invite à une interprétation prudente des coefficients et à considérer ces modèles comme des outils descriptifs plutôt que causaux.
+Ce travail constitue ainsi une base méthodologique solide pour la suite du projet. Les prolongements envisagés, notamment le développement de modèles prédictifs et l’utilisation de méthodes de clustering, permettront d’approfondir l’analyse et de mieux structurer les profils de pays, tout en s’inscrivant dans la continuité des choix méthodologiques présentés ici.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Bibliographie
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\printbibliography
 
 \end{document}
